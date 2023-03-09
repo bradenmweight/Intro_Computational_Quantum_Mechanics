@@ -29,9 +29,11 @@ def learn_make_numpy_array():
     print(f"my_2D_array = \n{my_2D_array}")
     print("\nObservations:")
     print("\tNote the difference in the way they are printed.")
-    print("\tNumpy arrays attempt to print themselves like matrices when possible \n\t  -- because that's what they are.")
+    print("\tNumpy arrays attempt to print themselves like matrices when possible \
+                \n\t  -- because that's what they are.")
 
-    print("\nMaking higher-dimensional arrays can be the same as for lists but is more complicated to write down.")
+    print("\nMaking higher-dimensional arrays can be the same as for lists \
+                but is more complicated to write down.")
     my_3D_list   = [ [ [1,2] ,[3,4]  ],\
                      [ [5,6] ,[7,8]  ],\
                      [ [9,10],[11,12]] ]
@@ -146,10 +148,14 @@ def learn_array_math():
     A = np.array([[1,2],[2,5]])
     print(f"A         = \n{A}")
     print(f"np.exp()  = \n{np.exp(A)}")
-    print("\t--> This does not make sense ! How do we do exponentials of matrices ? --> Open mathematical question !")
-    print("\t--> Recall that exponentials of matrices are very common in QM: U|\psi(0)> ~ e^(HAMILTONIAN*t)|\psi(t)>")
+    print("\t--> This does not make sense ! How do we do exponentials of matrices ? \
+                \n\t\t--> Open mathematical question !")
+    print("\t--> Recall that exponentials of matrices are very common in QM: \
+                \n\t\tU|\psi(0)> ~ e^(HAMILTONIAN*t)|\psi(t)>")
     print("e^A = 1 + 1/2 A^2 + 1/6 A^3 + 1/24 A^4 + ... (Taylor expansion)")
-    print("We can either (1) (i) diagonalize the matrix, (i) exponentiate the diagonals (math is okay if matrix is digonal), then rotate back, OR,")
+    print("We can either (1) (i) diagonalize the matrix, \
+                \n\t\t(ii) exponentiate the diagonals (math is okay if matrix is digonal), \
+                \n\t\tthen (iii) rotate back, OR,")
     print("\t(2) we can use the Pade approximation.")
     print("\n(1) Rotation to Diagonal Space")
     Av, U = np.linalg.eigh(A)
@@ -164,11 +170,14 @@ def learn_array_math():
     print("\tFor realistic problems, one may find matrices of NxN with N ~ 10^50")
     print("\tThe Pade approximation is much faster than (i) diagonalization, (ii) exponentiation, (iii) rotation")
 
+    print("\nNote: '@' symbolizes matrix multiplication with 2D numpy arrays.")
+    print("We will discuss this more when we get to linear algebra chapter.")
+
     #print("\n####### END ARRAY MATH #######\n")
 
 def main():
-    #learn_make_numpy_array()
-    learn_array_math() # Not linear algebra ... YET
+    learn_make_numpy_array()
+    #learn_array_math()
 
 if ( __name__ == "__main__" ):
     main()

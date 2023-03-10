@@ -1,9 +1,11 @@
 import numpy as np
+import subprocess as sp
 from scipy.optimize import newton
+from matplotlib import pyplot as plt
 
 def get_globals():
     global TOL, MAX_STEP, XGRID
-    TOL      = 10 ** -20                   # Stop search when {TOL} tolerance is reached
+    TOL      = 10 ** -10                   # Stop search when {TOL} tolerance is reached
     MAX_STEP = 10 ** 4                     # Stop after {MAX_STEP} steps
     XGRID    = np.linspace(0,2*np.pi,1000) # Function grid
     
@@ -26,6 +28,10 @@ def get_globals():
     global root_guess
     root_guess = 1
 
+    global DATA_DIR
+    DATA_DIR = "2_PLOTS_DATA"
+    sp.call(f"mkdir -p {DATA_DIR}",shell=True)
+
 
 def get_function(x):
     """
@@ -45,6 +51,8 @@ def do_Bisection_method():
     # Since we need to modify x0 and x1,
     #   we need this line to appear here
     
+    TRAJECTORY = []
+
     fa0 = get_function(a0)
     fb0 = get_function(b0)
 
@@ -63,6 +71,9 @@ def do_Bisection_method():
         fbn      = get_function(bn)
         cn       = (an + bn) / 2
         fcn      = get_function(cn)
+        
+        # Store trajectory
+        TRAJECTORY.append([cn,fcn])
 
         # Check convergence based on interval
         if ( abs(an) <= 1e-30 ):
@@ -73,7 +84,7 @@ def do_Bisection_method():
             print(f"\n\tBisection Method:")
             print(f"\tRoot converged after {step+1} iterations:")
             print(f"\tRoot: {cn}\n")
-            return cn # Exit FOR-LOOP and return to main()
+            return np.array(TRAJECTORY), cn # Exit FOR-LOOP and return to main()
 
         # Get next value
         if ( fan*fcn < 0 ):
@@ -87,11 +98,10 @@ def do_Bisection_method():
             bn -= L/8
             fan = get_function(an)
             fbn = get_function(bn)
-            print(an,bn,fan*fbn)
 
     print(f"\n\tFAILURE: Root not converged after {MAX_STEP} iterations.")
     print(f"\tFinal root: {cn}")
-    return cn
+    return np.array(TRAJECTORY), cn
 
 def do_Secant_method():
     """
@@ -102,7 +112,9 @@ def do_Secant_method():
     # Since we need to modify x0 and x1,
     #   we need this line to appear here
     global x0,x1 
-    
+
+    TRAJECTORY = []
+
     for step in range( MAX_STEP ):
         # Store function values
         fx0 = get_function(x0)
@@ -111,13 +123,16 @@ def do_Secant_method():
         # Get next value
         x2 = x1 - fx1 * (x1-x0) / (fx1-fx0)
 
+        # Store trajectory
+        TRAJECTORY.append([x2,get_function(x2)])
+
         # Check convergence based on interval
         INTERVAL = abs(x2-x1) / abs(x1)
         if ( INTERVAL <= TOL ):
             print(f"\n\tNewton-Raphson (Secant) Method:")
             print(f"\tRoot converged after {step+1} iterations:")
             print(f"\tRoot: {x2}\n")
-            return x2 # Exit FOR-LOOP and return to main()
+            return np.array(TRAJECTORY),x2 # Exit FOR-LOOP and return to main()
 
         # Set up for next iteration
         x0 = x1
@@ -125,7 +140,7 @@ def do_Secant_method():
 
     print(f"\n\tFAILURE: Root not converged after {MAX_STEP} iterations.")
     print(f"\tFinal root: {x2}")
-    return x2
+    return np.array(TRAJECTORY),x2
 
 def do_SCIPY_method():
     results = newton( get_function, root_guess, maxiter=MAX_STEP, tol=TOL, rtol=TOL, full_output=True )
@@ -146,14 +161,31 @@ def get_errors(root_BISECT,root_SECANT,root_SCIPY):
     print("\tNewton-Raphson (%1.2e %s):       %1.30f" % (abs(EXACT_ROOT-root_SECANT)/(EXACT_ROOT)*100,"%",abs(EXACT_ROOT-root_SECANT)/(EXACT_ROOT)))
     print("\tSCIPY Newton-Raphson (%1.2e %s): %1.30f" % (abs(EXACT_ROOT-root_SCIPY)/(EXACT_ROOT)*100,"%",abs(EXACT_ROOT-root_SCIPY)/(EXACT_ROOT)))
 
+def plot_trajectory( TRAJ_BISECT,TRAJ_SECANT ):
+
+    plt.loglog( np.arange( len(TRAJ_BISECT) ), np.abs(TRAJ_BISECT[:,0] - EXACT_ROOT), label="Bisection" )
+    plt.loglog( np.arange( len(TRAJ_SECANT) ), np.abs(TRAJ_SECANT[:,0] - EXACT_ROOT), label="Secant" )
+    
+    plt.xlim(1, 100 )
+    
+    plt.title("Rate of Convergence",fontsize=15)
+    plt.xlabel("Iteration Number",fontsize=15)
+    plt.ylabel("f(x) - f(x$_{EXACT}$) Number",fontsize=15)
+    plt.legend()
+    plt.savefig( f"{DATA_DIR}/TRAJECTORY_EXACT.jpg",dpi=300 )
+    plt.clf()
+
+
+
 
 
 def main():
     get_globals()
-    root_BISECT = do_Bisection_method()
-    root_SECANT = do_Secant_method()
+    TRAJ_BISECT, root_BISECT = do_Bisection_method()
+    TRAJ_SECANT, root_SECANT = do_Secant_method()
     root_SCIPY  = do_SCIPY_method()
     get_errors(root_BISECT,root_SECANT,root_SCIPY)
+    plot_trajectory(TRAJ_BISECT,TRAJ_SECANT)
 
 if ( __name__ == "__main__" ):
     main()

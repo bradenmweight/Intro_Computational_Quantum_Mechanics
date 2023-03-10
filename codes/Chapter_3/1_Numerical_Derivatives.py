@@ -1,23 +1,36 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import subprocess as sp
 
+
+################# BEGIN USER INPUT #################
 def get_globals():
-    global x_GRID, Nx
-    x_GRID = np.linspace( 0,1,100 ) # START, END, NPOINTS
+    global x_GRID, Nx, DATA_DIR
+
+    x_GRID = np.linspace( 0,1,100 ) # START, END, NPOINTS   
+
     Nx = len( x_GRID )
+    DATA_DIR = "1_PLOTS_DATA"
+    sp.call(f"mkdir -p {DATA_DIR}",shell=True)
+
 
 def get_f_x():
-    #f_x   = x_GRID**5 - x_GRID**3
+    f_x   = x_GRID**5 - x_GRID**3
     #f_x   = np.sin(x_GRID*2*np.pi)**2
-    f_x   = (x_GRID-0.5) * np.exp( -(x_GRID - 0.5)**2 / 0.01 )
+    #f_x   = (x_GRID-0.5) * np.exp( -(x_GRID - 0.5)**2 / 0.01 )
     return f_x    
 
 def get_exact_deriv():
-    #return 5*x_GRID**4 - 3 * x_GRID**2
-    #return 2*np.sin(x_GRID*2*np.pi)*np.cos(x_GRID*2*np.pi)*2*np.pi
+    return 5*x_GRID**4 - 3 * x_GRID**2
+    return 2*np.sin(x_GRID*2*np.pi)*np.cos(x_GRID*2*np.pi)*2*np.pi
+    """
     return np.exp( -(x_GRID - 0.5)**2 / 0.01 ) \
            + (x_GRID-0.5) * (-2*(x_GRID - 0.5) / 0.01) \
            * np.exp( -(x_GRID - 0.5)**2 / 0.01 )
+    """
+################# END USER INPUT #################
+
+
 
 def get_NUMPY_deriv(f_x):
     return np.gradient(f_x,x_GRID)
@@ -73,7 +86,7 @@ def plot_func( x_GRID, f_x, f_p_x, title ):
     plt.plot(x_GRID[0:-1:NPLOT],f_p_x[0:-1:NPLOT]  ,"o",c='red',lw=2,label="f'(x) (1st-Order F)")
     plt.legend()
     plt.xlim(x_GRID[0],x_GRID[-1])
-    plt.savefig(title + ".jpg",dpi=300)
+    plt.savefig(f"{DATA_DIR}/" + title + ".jpg",dpi=300)
     plt.clf()
 
 def plot_func_diff( x_GRID, f_x, f_p_x_1F, f_p_x_1C, title ):
@@ -86,7 +99,7 @@ def plot_func_diff( x_GRID, f_x, f_p_x_1F, f_p_x_1C, title ):
     plt.legend()
     plt.xlim(x_GRID[0],x_GRID[-1])
     plt.title("f'(x) (Exact) - f'(x) (Approx)",fontsize=15)
-    plt.savefig(title + ".jpg",dpi=300)
+    plt.savefig(f"{DATA_DIR}/" + title + ".jpg",dpi=300)
     plt.clf()
 
 def main():

@@ -7,7 +7,6 @@ def get_globals():
     global TOL, MAX_STEP, XGRID
     TOL      = 10 ** -10                   # Stop search when {TOL} tolerance is reached
     MAX_STEP = 10 ** 4                     # Stop after {MAX_STEP} steps
-    XGRID    = np.linspace(0,2*np.pi,1000) # Function grid
     
     # The exact root of the function for comparison
     global EXACT_ROOT
@@ -21,7 +20,7 @@ def get_globals():
     # Newton-Raphson (Secant) method requires 
     #    initial position and guess for next position
     global x0, x1
-    x0 = 0
+    x0 = 5
     x1 = 6
 
     # Scipy needs an initial guess for the root
@@ -92,10 +91,10 @@ def do_Bisection_method():
         elif ( fbn*fcn < 0 ):
             an = cn
         else:
-            print("No root region found. Choosing smaller region.")
+            print("No root region found. Choosing larger region.")
             L = bn - an
-            an += L/8
-            bn -= L/8
+            an += L*2
+            bn -= L*2
             fan = get_function(an)
             fbn = get_function(bn)
 

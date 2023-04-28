@@ -38,7 +38,7 @@ def get_4x4_DFT(): # 0, 1, 2, 3, ...
 
 def get_NxN_DFT(N): # 0, 1, 2, 3, ...
     """
-    Returns Nth-dimensional Discrete Fourier Transform (DFT) Matrix.
+    Returns NxN Discrete Fourier Transform (DFT) Matrix.
     """    
     gamma = np.exp(-2*np.pi/N * 1j)
     W = np.zeros(( N,N ), dtype=complex)

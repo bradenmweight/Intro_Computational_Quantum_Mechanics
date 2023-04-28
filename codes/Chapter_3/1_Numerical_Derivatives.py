@@ -15,14 +15,16 @@ def get_globals():
 
 
 def get_f_x():
-    f_x   = x_GRID**5 - x_GRID**3
+    f_x   = x_GRID**2
+    #f_x   = x_GRID**5 - x_GRID**3
     #f_x   = np.sin(x_GRID*2*np.pi)**2
     #f_x   = (x_GRID-0.5) * np.exp( -(x_GRID - 0.5)**2 / 0.01 )
     return f_x    
 
 def get_exact_deriv():
-    return 5*x_GRID**4 - 3 * x_GRID**2
-    return 2*np.sin(x_GRID*2*np.pi)*np.cos(x_GRID*2*np.pi)*2*np.pi
+    return 2*x_GRID
+    #return 5*x_GRID**4 - 3 * x_GRID**2
+    #return 2*np.sin(x_GRID*2*np.pi)*np.cos(x_GRID*2*np.pi)*2*np.pi
     """
     return np.exp( -(x_GRID - 0.5)**2 / 0.01 ) \
            + (x_GRID-0.5) * (-2*(x_GRID - 0.5) / 0.01) \

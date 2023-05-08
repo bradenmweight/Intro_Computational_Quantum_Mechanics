@@ -11,7 +11,7 @@ def get_globals():
 
     Nx = len( x_GRID )
     Ny = len( y_GRID )
-    DATA_DIR = "3.1.1_PLOTS_DATA"
+    DATA_DIR = "3.1.2_PLOTS_DATA"
     sp.call(f"mkdir -p {DATA_DIR}",shell=True)
 
 def get_f_x_y():

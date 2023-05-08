@@ -9,7 +9,7 @@ def get_globals():
     x_GRID = np.linspace( 0,10,1000 ) # START, END, NPOINTS   
 
     Nx = len( x_GRID )
-    DATA_DIR = "1_PLOTS_DATA"
+    DATA_DIR = "3.1.1_PLOTS_DATA"
     sp.call(f"mkdir -p {DATA_DIR}",shell=True)
 
 def get_f_x():

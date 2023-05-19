@@ -6,11 +6,10 @@ def do_part_a():
     dx    = XGRID[1] - XGRID[0]
     PSI   = np.sin( np.pi * XGRID )  # Non-normalized wavefunction
     print ( "\t\tIs PSI normalized (before) ?  %1.6f (Analytic = %1.6f)" % ( np.sum( PSI * PSI ) * dx, 0.500000 )  )
-    NORM  = np.sum( PSI * PSI ) * dx # Perform integration/inner product
-    # "NORM" is the normalization factor needed to enforce <\psi|\psi> = 1.0
-    PSI = PSI / np.sqrt( NORM ) # SQRT is needed if you assume the wavefunction = NORM * sin( \pi x)
-                                # Then you pick up \psi**2 = NORM**2 sin**2 (\pi x)
-    # Now, PSI is normalized, and we know the normalization factor needed: np.sqrt( NORM )
+    N2_INV  = np.sum( PSI * PSI ) * dx # Perform integration/inner product --> This is 1/N^2 from homework problem
+    N_INV   = np.sqrt( N2_INV )
+    N       = 1/N_INV # This is the "N" from the homework problem
+    PSI     = N * PSI
     print ( "\t\tIs PSI normalized (after)  ?  %1.6f" % ( np.sum( PSI * PSI ) * dx )  )
 
 def do_part_b():

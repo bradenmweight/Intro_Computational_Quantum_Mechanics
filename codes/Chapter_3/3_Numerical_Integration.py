@@ -11,14 +11,14 @@ def get_globals():
     global XMIN, XMAX, DATA_DIR
 
     """Parabola"""
-    XMIN = 0
-    XMAX = 1
+    #XMIN = 0
+    #XMAX = 1
     """Sine"""
     #XMIN = 0
     #XMAX = 1
     """Gaussian"""
-    #XMIN = -10
-    #XMAX = 10
+    XMIN = -10
+    XMAX = 10
 
 
     DATA_DIR = "3_PLOTS_DATA"
@@ -28,20 +28,20 @@ def get_f_x( x ):
         """
         'x' can be number or array
         """
-        return x ** 2
+        #return x ** 2
         #return np.sin(2 * np.pi * x)
-        #return np.exp(-x**2 / 2)
+        return np.exp(-x**2 / 2)
 
 def get_exact_integral():
-    return 1/3
+    #return 1/3
     #return 0.0
-    #return np.sqrt(2 * np.pi)
+    return np.sqrt(2 * np.pi)
 ################# END USER INPUT #################
 
 
 def plot_Riem_Trap():
     Nx_fine     = 1000
-    Nx_coarse   = 10
+    Nx_coarse   = 25
     GRID_fine   = np.linspace( XMIN,XMAX,Nx_fine ) # START, END, NPOINTS  
     GRID_coarse = np.linspace( XMIN,XMAX,Nx_coarse ) # START, END, NPOINTS  
     f_x_fine    = get_f_x( GRID_fine )

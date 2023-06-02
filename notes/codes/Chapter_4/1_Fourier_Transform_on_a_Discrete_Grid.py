@@ -23,7 +23,7 @@ def getGlobals():
 def get_f_x():
     
     # Gaussian Function
-    f_x = np.exp(-x**2 / 2) + 0j
+    f_x = np.sqrt(1/2/np.pi) * np.exp(-x**2 / 2) + 0j
     
     # Sinusoidal function of frequency k = +- 1
     #f_x = np.sin( 2 * np.pi * x ) + 0j
@@ -99,7 +99,6 @@ def get_FT_Centered( f_x ):
     a = (Nx)//2
     W = np.exp( -2j*np.pi * (m-a) * (n-a) / Nx )
     
-    
     # Operate W on the real-space function
     f_k = W @ f_x
     
@@ -117,15 +116,18 @@ def get_numpy_FT( f_x ):
     f_k = np.roll( f_k, Nx//2 )
     k    = np.roll( k, Nx//2 )
 
-    print("kmax (Numpy)", round(np.max(k),2))
-
     return k, f_k
 
 def plot_f_k(k,f_k,k_np,f_k_np,title):
     plt.plot( k, np.abs(f_k.real), "-", c='black', lw=10, alpha=0.5, label="RE (Manual)" )
     plt.plot( k, np.abs(f_k.imag), "o-", c='black', lw=10, alpha=0.5, label="IM (Manual)" )
+
     plt.plot( k_np,np.abs(f_k_np.real),"-", c='red', lw=2, label="RE (Numpy)" )
     plt.plot( k_np,np.abs(f_k_np.imag), "o-", c='red', lw=2, label="IM (Numpy)" )
+
+    # Gaussian function in k-space -- Analytic Result
+    #plt.plot( k, np.sqrt(1/2/np.pi) * np.exp(-2 * k**2 * np.pi**2), c="green", label="Gaussian" )
+
     plt.legend()
     plt.xlim(-2,2 )
     plt.xlabel("k", fontsize=18)

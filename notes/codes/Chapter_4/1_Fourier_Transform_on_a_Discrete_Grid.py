@@ -119,6 +119,8 @@ def get_numpy_FT( f_x ):
     return k, f_k
 
 def plot_f_k(k,f_k,k_np,f_k_np,title):
+
+    # Plot a version comparing directly to Numpy
     plt.plot( k, np.abs(f_k.real), "-", c='black', lw=10, alpha=0.5, label="RE (Manual)" )
     plt.plot( k, np.abs(f_k.imag), "o-", c='black', lw=10, alpha=0.5, label="IM (Manual)" )
 
@@ -135,6 +137,24 @@ def plot_f_k(k,f_k,k_np,f_k_np,title):
     plt.tight_layout()
     plt.savefig(f"{DATA_DIR}/f_k_{title}.jpg")
     plt.clf()
+
+
+    # Plot a ''clean'' one without comparing to Numpy
+    plt.plot( k, f_k.real, "-", c='black', lw=4, label="RE" )
+    plt.plot( k, f_k.imag, "-", c='red',   lw=4, label="IM" )
+
+    # Gaussian function in k-space -- Analytic Result
+    #plt.plot( k, np.sqrt(1/2/np.pi) * np.exp(-2 * k**2 * np.pi**2), c="green", label="Gaussian" )
+
+    plt.legend()
+    plt.xlim(-2,2 )
+    plt.xlabel("k", fontsize=18)
+    plt.ylabel("f(k)", fontsize=18)
+    plt.tight_layout()
+    plt.savefig(f"{DATA_DIR}/f_k_{title}_clean.jpg")
+    plt.clf()
+
+
 
 
 

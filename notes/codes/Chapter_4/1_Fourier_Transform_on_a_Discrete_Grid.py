@@ -16,8 +16,10 @@ def get_f_x():
     global x, dx, Lx, Nx
 
     # Gaussian Function
+    global sigma # For use when plotting the analytic result
+    sigma = 1
     x   = np.linspace(-20,20,1001)
-    f_x = np.sqrt(1/2/np.pi) * np.exp(-x**2 / 2) + 0j
+    f_x = np.sqrt(1/2/np.pi/sigma**2) * np.exp(-x**2 / 2 / sigma**2) + 0j
 
     ## Shifted Gaussian Function
     ## Shift in real-space results is phase change of the DFT
@@ -158,9 +160,6 @@ def plot_f_k(k,f_k,k_np,f_k_np,title):
     plt.plot( k_np,np.abs(f_k_np.real),"-", c='red', lw=2, label="RE (Numpy)" )
     plt.plot( k_np,np.abs(f_k_np.imag), "o-", c='red', lw=2, label="IM (Numpy)" )
 
-    # Gaussian function in k-space -- Analytic Result
-    #plt.plot( k, np.sqrt(1/2/np.pi) * np.exp(-2 * k**2 * np.pi**2), c="green", label="Gaussian" )
-
     plt.legend()
     plt.xlim(-2,2 )
     plt.xlabel("k", fontsize=18)
@@ -176,8 +175,8 @@ def plot_f_k(k,f_k,k_np,f_k_np,title):
     plt.plot( k, f_k.imag, "-", c='red',   lw=2, label="IM" )
 
     # Gaussian function in k-space -- Analytic Result
-    #analytic_func_k = np.sqrt(1/2/np.pi) * np.exp(-2 * k**2 * np.pi**2)
-    #plt.plot( k, analytic_func_k, c="green", label="Gaussian" )
+    analytic_func_k = np.sqrt(1/2/np.pi) * np.exp(-2 * sigma**2 * k**2 * np.pi**2)
+    plt.plot( k, analytic_func_k, "o", c="black", label="Analytic RE" )
 
     # Shifted Gaussian function
     #analytic_func_k = np.sqrt(1/2/np.pi) * np.exp(-2 * k**2 * np.pi**2)

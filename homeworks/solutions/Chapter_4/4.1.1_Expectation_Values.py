@@ -1,7 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import subprocess as sp
-from scipy.integrate import trapz
 
 DATA_DIR = "4.1.1_PLOTS"
 sp.call(f"mkdir -p {DATA_DIR}", shell=True)
@@ -22,8 +21,14 @@ def plot_f_x(x,f_x):
 
     color_list = ['black','red','green','blue','orange','purple']
     for p0IND,p0 in enumerate( p0_LIST[:2] ):
-        plt.plot( x, f_x[p0IND].real, "-", lw=6, alpha=0.25, c=color_list[p0IND], label=f"p0 = {round(p0,1)} RE" )
-        plt.plot( x, f_x[p0IND].imag, "--", c=color_list[p0IND] )
+        if ( p0IND == 0 ):
+            plt.plot( x, f_x[p0IND].real, "--", c=color_list[p0IND], label=f"p0 = {round(p0,1)} RE" )
+            plt.plot( x, f_x[p0IND].imag, ":", c=color_list[p0IND], label=f"p0 = {round(p0,1)} IM" )
+            plt.plot( x, np.abs(f_x[p0IND]), "-", lw=1, c=color_list[p0IND], label=f"p0 = {round(p0,1)} ABS" )
+        else:
+            plt.plot( x, f_x[p0IND].real, "--", c=color_list[p0IND], label=f"p0 = {round(p0,1)}" )
+            plt.plot( x, f_x[p0IND].imag, ":", c=color_list[p0IND] )
+            plt.plot( x, np.abs(f_x[p0IND]), "-", lw=1, c=color_list[p0IND] )
 
     plt.legend()
     plt.xlim(-5,5)
@@ -72,11 +77,16 @@ def plot_f_p(p,f_p):
 
     color_list = ['black','red','green','blue','orange','purple']
     for p0IND,p0 in enumerate( p0_LIST[:5] ):
-        plt.plot( p, f_p[p0IND].real, "-",  c=color_list[p0IND], label=f"p0 = {round(p0,1)} RE" )
-        plt.plot( p, f_p[p0IND].imag, "--", c=color_list[p0IND] )
-
+        if ( p0IND == 0 ):
+            plt.plot( p, f_p[p0IND].real, "--",    c=color_list[p0IND], label=f"$p_0$ = {round(p0,1)} RE" )
+            plt.plot( p, f_p[p0IND].imag, ":",     c=color_list[p0IND], label=f"$p_0$ = {round(p0,1)} IM" )
+            plt.plot( p, np.abs(f_p[p0IND]), "-",  c=color_list[p0IND], label=f"$p_0$ = {round(p0,1)} ABS" )
+        else:
+            plt.plot( p, f_p[p0IND].real, "--",    c=color_list[p0IND], label=f"$p_0$ = {round(p0,1)}" )
+            plt.plot( p, f_p[p0IND].imag, ":",     c=color_list[p0IND] )
+            plt.plot( p, np.abs(f_p[p0IND]), "-",  c=color_list[p0IND] )
     plt.legend()
-    plt.xlim(-2,10)
+    plt.xlim(p0_LIST[0]-2,p0_LIST[-1]+2)
     plt.xlabel("p",fontsize=15)
     plt.ylabel("Wavefunction",fontsize=15)
     plt.savefig(f"{DATA_DIR}/f_p.jpg",dpi=400)
@@ -105,9 +115,8 @@ def get_observables( x,f_x,p,f_p ):
         
         # Do expectations of momentum
         PROB   = get_PROB( f_p[p0IND] )
-        P_AVE[p0IND]  = np.sum( PROB * p    ) * dx
-        P2_AVE[p0IND] = np.sum( PROB * p**2 ) * dx
-        #P2_AVE[p0IND] = trapz( PROB * p**2 , p )
+        P_AVE[p0IND]  = np.sum( PROB * p    ) * dp
+        P2_AVE[p0IND] = np.sum( PROB * p**2 ) * dp
 
     np.savetxt( f"{DATA_DIR}/EXPECTATION_VALUES.dat", np.c_[ p0_LIST, X_AVE, X2_AVE, P_AVE, P2_AVE ], fmt="%1.4f" )
 

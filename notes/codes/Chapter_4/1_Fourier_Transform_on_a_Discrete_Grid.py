@@ -6,7 +6,6 @@ import subprocess as sp
 
 from numpy import fft
 
-
 def getGlobals():
     global DATA_DIR
     DATA_DIR = "1_PLOTS_DATA/"
@@ -75,6 +74,15 @@ def get_f_x():
     Lx  = x[-1] - x[0] # Last minus first
     dx  = x[1]  - x[0] # Second minus first
 
+    """
+    # Normalize Function
+    NORM = np.sum( np.conjugate(f_x) * f_x ) * dx
+    #print( "NORM x (Before)", NORM )
+    f_x /= np.sqrt(NORM)
+    NORM = np.sum( np.conjugate(f_x) * f_x ) * dx
+    #print( "NORM x (After) ", NORM )
+    """
+    
     return f_x
 
 def plot_f_x(f_x):
@@ -157,8 +165,12 @@ def plot_f_k(k,f_k,k_np,f_k_np,title):
     plt.plot( k, np.abs(f_k.real), "-", c='black', lw=10, alpha=0.5, label="RE (Manual)" )
     plt.plot( k, np.abs(f_k.imag), "o-", c='black', lw=10, alpha=0.5, label="IM (Manual)" )
 
+    #print( "NORM:", np.sum( np.abs(f_k)**2 ) * (k[1]-k[0]) )
+
     plt.plot( k_np,np.abs(f_k_np.real),"-", c='red', lw=2, label="RE (Numpy)" )
     plt.plot( k_np,np.abs(f_k_np.imag), "o-", c='red', lw=2, label="IM (Numpy)" )
+
+    #print( "NORM:", np.sum( f_k_np.real**2 ) * (k_np[1]-k_np[0]) )
 
     plt.legend()
     plt.xlim(-2,2 )

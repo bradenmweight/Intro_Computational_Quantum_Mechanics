@@ -15,7 +15,7 @@ def get_Globals():
     global k, kp
     # Reaction rate
     k  = 1.0
-    kp = 0.5
+    kp = 0.25
 
     global t_grid, A_t, B_t
     t_grid  = np.arange( t_start, t_end+dt, dt ) 
@@ -41,12 +41,15 @@ def do_Euler():
         A_t[n+1] = A_NOW + dt * ( -k * A_NOW + kp * B_NOW )
         B_t[n+1] = B_NOW + dt * (  k * A_NOW - kp * B_NOW )
 
+    print( A_t[-1], A_t[-1]/B_t[-1], k/(k+kp), kp/(k+kp) )
+
 def plot():
 
     plt.plot( t_grid, A_t[:], "-", lw=3, label="[A](t)")
     plt.plot( t_grid, B_t[:], "-", lw=3, label="[B](t)")
     plt.plot( t_grid, A_t[:] + B_t[:], "-", lw=3, label="[A](t) + [B](t)")
-    plt.plot( t_grid, np.ones(len(t_grid)) * kp/k, "--", c="black", lw=3  )
+    plt.plot( t_grid, np.ones(len(t_grid)) * kp/(k+kp), "--", c="black", lw=3  )
+    plt.plot( t_grid, np.ones(len(t_grid)) * 1-kp/(k+kp), "--", c="black", lw=3  )
     plt.legend()
     plt.xlim(t_grid[0], t_grid[-1])
     plt.xlabel("Reaction Time t",fontsize=15)

@@ -16,7 +16,7 @@ def getGlobals():
 
     TMIN   = 0.0
     TMAX   = 20.0
-    dT     = 0.1 # Convergence parameter
+    dT     = 1.0 # Convergence parameter
 
     TIME_GRID = np.arange( TMIN, TMAX, dT )
     NSTEPS = len(TIME_GRID)
@@ -41,12 +41,19 @@ def Euler_Propagate():
 def plot():
 
     plt.plot( TIME_GRID, h_t )
+    plt.xlabel("Time, s", fontsize=15)
+    plt.ylabel("Height, m", fontsize=15)
+    plt.title("Bouncing Ball ???", fontsize=15)
     plt.savefig(f"{DATA_DIR}/h_t",dpi=300)
 
 def main():
     getGlobals()
     Euler_Propagate()
     plot()
+
+    print("\n\tA. Do we bounce ?")
+    print("\tB. Do we gain or lose energy ?")
+    print("\tC. What if we lost energy when we bouce ? Diss. ~ v(t)")
 
 if ( __name__ == "__main__" ):
     main()

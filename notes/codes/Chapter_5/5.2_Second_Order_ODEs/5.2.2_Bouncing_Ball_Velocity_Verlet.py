@@ -30,8 +30,8 @@ def getGlobals():
     BOUNCE = True # If not bounce, we stop the ball
 
     global AIR_FRICTION, FRICTION_CONSTANT
-    AIR_FRICTION      = False
-    FRICTION_CONSTANT = 0.1 # m/s^2 -- Units of Acceleration
+    AIR_FRICTION      = True
+    FRICTION_CONSTANT = 0.1 # 1/s -- Units of Acceleration
 
     global E_KINETIC_EU, E_POTENTIAL_EU, E_TOTAL_EU
     global E_KINETIC_VV, E_POTENTIAL_VV, E_TOTAL_VV
@@ -63,7 +63,7 @@ def Euler_Propagate():
         v_t_EU[step+1] = v_t_EU[step] + dT * GRAV_CONST 
 
         if ( AIR_FRICTION == True ): # Lose energy due to air friction
-            v_t_EU[step+1] = v_t_EU[step+1] - dT * FRICTION_CONSTANT * v_t_EU[step+1]
+            v_t_EU[step+1] = v_t_EU[step+1] - np.sign(v_t_EU[step+1]) * dT * FRICTION_CONSTANT * v_t_EU[step+1]**2
 
         E_KINETIC_EU[step+1], E_POTENTIAL_EU[step+1], E_TOTAL_EU[step+1] = get_total_energy(h_t_EU[step+1],v_t_EU[step+1])
 
@@ -97,7 +97,7 @@ def Velocity_Verlet_Propagate():
 
         # Approximate addition of air friction. We could add to VV scheme if we wanted to be better.
         if ( AIR_FRICTION == True ): # Lose energy due to air friction
-            v_t_VV[step+1] -= dT * FRICTION_CONSTANT * v_t_VV[step+1]
+            v_t_VV[step+1] -= np.sign(v_t_VV[step+1]) * dT * FRICTION_CONSTANT * v_t_VV[step+1]**2
 
         E_KINETIC_VV[step+1], E_POTENTIAL_VV[step+1], E_TOTAL_VV[step+1] = get_total_energy(h_t_VV[step+1],v_t_VV[step+1])
 

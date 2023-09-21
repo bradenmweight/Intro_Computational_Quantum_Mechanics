@@ -69,6 +69,7 @@ def Euler_Propagate():
 
         if ( h_t_EU[step+1] < 0.0 ): # Can't go through the floor...
             if ( BOUNCE == True ):
+                h_t_EU[step+1] *= -1 
                 v_t_EU[step+1] *= -1 
             else:
                 STOP = step+1
@@ -103,6 +104,7 @@ def Velocity_Verlet_Propagate():
 
         if ( h_t_VV[step+1] < 0.0 ): # Can't go through the floor...
             if ( BOUNCE == True ):
+                h_t_VV[step+1] *= -1 
                 v_t_VV[step+1] *= -1 
             else:
                 STOP = step+1

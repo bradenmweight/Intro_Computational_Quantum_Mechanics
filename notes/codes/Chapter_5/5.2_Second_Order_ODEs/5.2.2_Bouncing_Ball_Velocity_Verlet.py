@@ -17,7 +17,7 @@ def getGlobals():
 
     TMIN   = 0.0
     TMAX   = 20.0
-    dT     = 0.001 # Convergence parameter
+    dT     = 0.01 # Convergence parameter
 
     TIME_GRID = np.arange( TMIN, TMAX, dT )
     NSTEPS = len(TIME_GRID)
@@ -31,7 +31,7 @@ def getGlobals():
 
     global AIR_FRICTION, FRICTION_CONSTANT
     AIR_FRICTION      = True
-    FRICTION_CONSTANT = 0.1 # 1/s -- Units of Acceleration
+    FRICTION_CONSTANT = 0.1 # 1/s -- Units of Rate
 
     global E_KINETIC_EU, E_POTENTIAL_EU, E_TOTAL_EU
     global E_KINETIC_VV, E_POTENTIAL_VV, E_TOTAL_VV

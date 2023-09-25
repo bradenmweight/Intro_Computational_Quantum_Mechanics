@@ -30,7 +30,7 @@ def getGlobals():
     BOUNCE = True # If not bounce, we stop the ball
 
     global AIR_FRICTION, FRICTION_CONSTANT
-    AIR_FRICTION      = True
+    AIR_FRICTION      = False
     FRICTION_CONSTANT = 0.1 # 1/s -- Units of Rate
 
     global E_KINETIC_EU, E_POTENTIAL_EU, E_TOTAL_EU
@@ -69,7 +69,7 @@ def Euler_Propagate():
 
         if ( h_t_EU[step+1] < 0.0 ): # Can't go through the floor...
             if ( BOUNCE == True ):
-                h_t_EU[step+1] *= -1 
+                #h_t_EU[step+1] *= -1 
                 v_t_EU[step+1] *= -1 
             else:
                 STOP = step+1
@@ -104,7 +104,7 @@ def Velocity_Verlet_Propagate():
 
         if ( h_t_VV[step+1] < 0.0 ): # Can't go through the floor...
             if ( BOUNCE == True ):
-                h_t_VV[step+1] *= -1 
+                #h_t_VV[step+1] *= -1 
                 v_t_VV[step+1] *= -1 
             else:
                 STOP = step+1
@@ -125,7 +125,7 @@ def plot():
     plt.plot( TIME_GRID[:STOP], h_t_VV[:STOP], label="Velocity-Verlet" )
     plt.xlabel("Time (s)", fontsize=15)
     plt.ylabel("Height (m)", fontsize=15)
-    plt.title("Bouncing Ball ???", fontsize=15)
+    plt.title("Bouncing Ball", fontsize=15)
     plt.legend()
     plt.savefig(f"{DATA_DIR}/h_t.jpg",dpi=300)
     plt.clf()
@@ -134,7 +134,7 @@ def plot():
     plt.plot( TIME_GRID[:STOP], v_t_VV[:STOP], label="Velocity-Verlet" )
     plt.xlabel("Time (s)", fontsize=15)
     plt.ylabel("Velocity (m/s)", fontsize=15)
-    plt.title("Bouncing Ball ???", fontsize=15)
+    plt.title("Bouncing Ball", fontsize=15)
     plt.legend()
     plt.savefig(f"{DATA_DIR}/v_t.jpg",dpi=300)
     plt.clf()

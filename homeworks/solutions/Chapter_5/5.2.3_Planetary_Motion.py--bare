@@ -1,0 +1,132 @@
+import numpy as np
+from matplotlib import pyplot as plt
+import subprocess as sp
+from numba import jit
+from time import time
+
+def get_Globals():
+    global NOBJECTS, NSTEPS, dt
+    global INIT_POS, INIT_VEL, MASSES
+    NOBJECTS = 3
+    dt       = 0.25
+    NSTEPS   = 10000
+    INIT_POS = np.zeros( (NOBJECTS,3) )
+    INIT_VEL = np.zeros( (NOBJECTS,3) )
+    MASSES   = np.zeros( (NOBJECTS) )
+    
+    #### Circular Orbit ####
+    #### NOBJECTS = 2
+    # INIT_POS[0,:] = np.array( [0,0,0] )
+    # INIT_POS[1,:] = np.array( [1000,0,0] )
+    # INIT_VEL[0,:] = np.array( [0,0,0] )
+    # MASSES[0]     = 100000
+    # MASSES[1]     = 10
+    # R12           = np.linalg.norm(INIT_POS[0,:] - INIT_POS[1,:])
+    # INIT_VEL[1,1] = np.sqrt((MASSES[0] + MASSES[1]) / R12) # Y-direction -- Perp. to \hat{r}
+    ########################
+
+    #### Elliptical Orbit ####
+    #### NOBJECTS = 2
+    # INIT_POS[0,:] = np.array( [0,0,0] )
+    # INIT_POS[1,:] = np.array( [1000,0,0] )
+    # INIT_VEL[0,:] = np.array( [0,0,0] )
+    # MASSES[0]     = 100000
+    # MASSES[1]     = 10
+    # R12           = np.linalg.norm(INIT_POS[0,:] - INIT_POS[1,:])
+    # INIT_VEL[1,1] = np.sqrt((MASSES[0] + MASSES[1]) / R12)/2 # Y-direction -- Perp. to \hat{r}
+    ########################
+
+    #### Escapting Object ####
+    #### NOBJECTS = 2
+    # INIT_POS[0,:] = np.array( [0,0,0] )
+    # INIT_POS[1,:] = np.array( [1000,0,0] )
+    # INIT_VEL[0,:] = np.array( [0,0,0] )
+    # MASSES[0]     = 100000
+    # MASSES[1]     = 10
+    # R12           = np.linalg.norm(INIT_POS[0,:] - INIT_POS[1,:])
+    # INIT_VEL[1,1] = np.sqrt((MASSES[0] + MASSES[1]) / R12)*np.sqrt(2) # Y-direction -- Perp. to \hat{r}
+    ########################
+
+
+    #### 3-Body Orbits (Unstable) ####
+    INIT_POS[0,:] = np.array( [-1000,0,0] )
+    INIT_POS[1,:] = np.array( [0,1000,0] )
+    INIT_POS[2,:] = np.array( [1000,0,0] )
+    INIT_VEL[0,:] = np.array( [0,-1,0] )
+    INIT_VEL[1,:] = np.array( [0,0,0] )
+    INIT_VEL[2,:] = np.array( [0,1,0] )
+    MASSES[0]     = 10000
+    MASSES[1]     = 100
+    MASSES[2]     = 10000
+    ########################
+
+    global COORDS, VELOCS
+    COORDS = np.zeros( (NOBJECTS,NSTEPS,3) )
+    VELOCS = np.zeros( (NOBJECTS,NSTEPS,3) )
+
+    global ENERGY
+    ENERGY = np.zeros( (3,NSTEPS) ) # EKIN, EPOT, ETOT
+
+    global DATA_DIR
+    DATA_DIR = "5.2.3_Planetary_Motion/"
+    sp.call(f"mkdir -p {DATA_DIR}",shell=True)
+
+@jit(nopython=True)
+def get_Gravitational_Force( R ):
+
+
+    return FORCE
+
+def propagate_VV():
+
+@jit(nopython=True)
+def get_Energy( R, V ):
+    
+    return E
+
+def plot():
+
+    ##### 3D Figure #####
+    #ax = plt.figure().add_subplot(projection='3d')
+    #for p in range( NOBJECTS ):
+    #    ax.plot( COORDS[p,:,0], COORDS[p,:,1], COORDS[p,:,2], c='black', label=f"O{p}" )
+    
+    for p in range( NOBJECTS ):
+        plt.plot( COORDS[p,:,0], COORDS[p,:,1], label=f"Obj. {p}" )
+    plt.legend()
+    plt.xlabel("Position X (a.u.)",fontsize=15)
+    plt.ylabel("Position Y (a.u.)",fontsize=15)
+    plt.savefig(f"{DATA_DIR}/Trajectory.jpg",dpi=300)
+    plt.clf()
+
+    for p in range( NOBJECTS ):
+        plt.plot( VELOCS[p,:,0], VELOCS[p,:,1], label=f"Obj. {p}" )
+    plt.legend()
+    plt.xlabel("Velocity X (a.u.)",fontsize=15)
+    plt.ylabel("Velocity Y (a.u.)",fontsize=15)
+    plt.savefig(f"{DATA_DIR}/Velocity.jpg",dpi=300)
+    plt.clf()
+
+    plt.plot( np.arange(NSTEPS)*dt, ENERGY[0,:], c='black', label="$E_\mathrm{Kin}$" )
+    plt.plot( np.arange(NSTEPS)*dt, ENERGY[1,:], c='red', label="$E_\mathrm{Pot}$" )
+    plt.plot( np.arange(NSTEPS)*dt, ENERGY[2,:], c='green', label="$E_\mathrm{Tot}$" )
+    plt.legend()
+    plt.xlabel("Time (a.u.)",fontsize=15)
+    plt.ylabel("Energy (a.u.)",fontsize=15)
+    plt.savefig(f"{DATA_DIR}/Energy.jpg",dpi=300)
+    plt.clf()
+
+    plt.plot( np.arange(NSTEPS)*dt, ENERGY[2,:] - ENERGY[2,0], c='black', label="$E_\mathrm{Tot}$" )
+    plt.legend()
+    plt.xlabel("Time (a.u.)",fontsize=15)
+    plt.ylabel("Energy (a.u.)",fontsize=15)
+    plt.savefig(f"{DATA_DIR}/Energy_Total.jpg",dpi=300)
+    plt.clf()
+
+def main():
+    get_Globals()
+    propagate_VV()
+    plot()
+
+if ( __name__ == "__main__" ):
+    main()

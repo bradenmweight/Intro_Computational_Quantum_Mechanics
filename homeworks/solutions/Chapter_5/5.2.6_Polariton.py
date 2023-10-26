@@ -21,7 +21,7 @@ def get_Globals():
     # Photonic Parameters
     global QC0, VC0, WC, QC, VC, A0, do_DSE
     do_DSE = True
-    A0     = 1.0
+    A0     = 0.1
     QC0    = 0
     VC0    = 0
     WC     = 1

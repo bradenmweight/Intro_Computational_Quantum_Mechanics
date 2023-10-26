@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import subprocess as sp
 
 def get_Globals():
     # General Parameters
@@ -12,19 +13,24 @@ def get_Globals():
     global X0, V0, W0, X, V, M
     X0  = 1
     V0  = 0
-    W0  = 1
+    W0  = 2
     M   = 1
     X   = np.zeros( (NSTEPS) ) # One Particle
     V   = np.zeros( (NSTEPS) ) # One Particle
 
     # Photonic Parameters
     global QC0, VC0, WC, QC, VC, A0
-    A0  = 0.1
+    A0  = 1
     QC0 = 0
     VC0 = 0
-    WC  = 1
+    WC  = 0.5
     QC  = np.zeros( (NSTEPS) ) # One Photon
     VC  = np.zeros( (NSTEPS) ) # One Photon
+
+    global DATA_DIR
+    DATA_DIR = "5.2.6_Polariton/"
+    sp.call(f"mkdir -p {DATA_DIR}",shell=True)
+
 
 def get_X_FORCE( x, q ): # Electronic Force
     FORCE  = np.zeros( (1) ) # One Particle
@@ -59,13 +65,44 @@ def plot():
 
     plt.plot( np.arange(NSTEPS), X[:], label="X" )
     plt.plot( np.arange(NSTEPS), QC[:], label="QC" )
-    plt.savefig("Position_t.jpg", dpi=300)
+    plt.legend()
+    plt.xlabel("Time (a.u.)", fontsize=15)
+    plt.ylabel("Position (a.u.)", fontsize=15)
+    plt.savefig(f"{DATA_DIR}/Position_t.jpg", dpi=300)
+    plt.clf()
 
+def get_FFT():
+
+    SMOOTH = np.sin( np.pi * np.arange(len(X))/len(X) ) # np.ones( len(X) )
+    X_k = np.fft.fft( SMOOTH * X, n=2**15, norm='ortho' )
+    #X_k = np.fft.fft( X, n=2**15, norm='ortho' )
+    k   = np.fft.fftfreq( len(X_k) )
+
+    X_k = np.roll( X_k, len(X_k)//2 )
+    k   = np.roll( k, len(k)//2 )
+
+    k *= 2 * np.pi / dt
+
+    return k, X_k   
+
+def plot_FFT(k, X_k):
+
+    plt.plot( k, np.abs(X_k), label="|X_k|" )
+    #plt.plot( k, X_k.real, label="Re[X_k]" )
+    #plt.plot( k, X_k.imag, label="Im[X_k]" )
+    plt.legend()
+    plt.xlabel("Frequency (a.u.)", fontsize=15)
+    plt.ylabel("Position (a.u.)", fontsize=15)
+    plt.xlim(-5,5)
+    plt.savefig(f"{DATA_DIR}/Position_w.jpg", dpi=300)
+    plt.clf()
 
 def main():
     get_Globals()
     propagate_VV()
     plot()
+    k, X_k = get_FFT()
+    plot_FFT( k, X_k )
 
 if ( __name__ == "__main__" ):
     main()

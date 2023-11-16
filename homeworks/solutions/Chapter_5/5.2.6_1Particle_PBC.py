@@ -34,9 +34,14 @@ def check_PBC( R ):
 
 def propagate():
     for step in range( NSTEPS-1 ):
+
+        # Do volecity-Verlet
         COORDS[step+1] = COORDS[step] + dt * VELOCS[step] # No forces
-        COORDS[step+1] = check_PBC( COORDS[step+1] )
         VELOCS[step+1] = VELOCS[step] # No forces
+
+        # Check the boundary conditions
+        COORDS[step+1] = check_PBC( COORDS[step+1] )
+
 
 def plot():
     plt.plot( np.arange(NSTEPS)*dt, COORDS[:] )

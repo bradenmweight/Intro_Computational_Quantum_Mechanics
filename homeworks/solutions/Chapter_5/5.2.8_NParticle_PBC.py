@@ -14,14 +14,14 @@ def get_Globals():
     NSKIP      = int(np.ceil(2/dt)) # Save every 2 a.u.t.
 
     global COORDS, VELOCS, MASSES, ENERGY, TEMP
-    COORDS = np.zeros( (NSTEPS,NPARTICLES) )
-    VELOCS = np.zeros( (NSTEPS,NPARTICLES) )
+    COORDS = np.zeros( (NSTEPS,NPARTICLES,3) )
+    VELOCS = np.zeros( (NSTEPS,NPARTICLES,3) )
     MASSES = np.ones ( (NPARTICLES) )
     ENERGY = np.zeros( (NSTEPS,3) ) # EKIN, EPOT, ETOT
     TEMP   = np.zeros( (NSTEPS) )
     
-    COORDS[0,:] = np.arange( 1,NPARTICLES+1 )*2
-    VELOCS[0,:] = np.zeros( (NPARTICLES) )
+    COORDS[0,:,0] = np.arange( 1,NPARTICLES+1 )*2
+    VELOCS[0,:] = np.zeros( (NPARTICLES,3) )
 
     global L, EPS, SIG
     L = (2*NPARTICLES + 1) * 1.25
@@ -41,16 +41,17 @@ def check_PBC( R ):
 @jit(nopython=True)
 def get_Force( R, step ):
 
-    FORCE = np.zeros( (NPARTICLES) )
+    FORCE = np.zeros( (NPARTICLES,3) )
     for p in range( NPARTICLES ):
         for pp in range( p+1, NPARTICLES ):
             R12  = R[pp] - R[p]
-            if ( abs(R12) > L/2 ):
-                if ( R[pp] > L/2 ):
-                    R12 = (R[pp] - L) - R[p]
-                elif ( R[pp] < L/2 ):
-                    R12 = (R[pp] + L) - R[p]
-            R12_NORM   = abs(R12) # np.linalg.norm( R12 ) # |R1 - R2| = sqrt( dx^2 + dy^2 + dz^2 )
+            for d in range( 3 ):
+                if ( np.linalg.norm(R12) > L/2 ):
+                    if ( R[pp,d] > L/2 ):
+                        R12[d] = (R[pp,d] - L) - R[p,d]
+                    elif ( R[pp,d] < L/2 ):
+                        R12 = (R[pp,d] + L) - R[p,d]
+            R12_NORM   = np.linalg.norm( R12 ) # |R1 - R2| = sqrt( dx^2 + dy^2 + dz^2 )
             R12_UNIT   = R12 / R12_NORM           
             
             FORCE[p]  += -1 * 4 * EPS * ( -12 * SIG**12 / R12_NORM**13 + 6 * SIG**6 / R12_NORM**7 ) * R12_UNIT
@@ -62,7 +63,7 @@ def get_Force( R, step ):
 
 def propagate():
 
-    ENERGY[0,:] = get_Energy( COORDS[0,:], VELOCS[0,:] )
+    ENERGY[0,:] = get_Energy( COORDS[0,:], VELOCS[0,:], MASSES[:,None] )
     TEMP[0]     = get_Temperature( ENERGY[0,0], NPARTICLES )
     F0          = get_Force( COORDS[0], 0 )
     
@@ -71,30 +72,31 @@ def propagate():
             print("Step %1.0f of %1.0f" % (step, NSTEPS))
 
         # Do volecity-Verlet
-        COORDS[step+1] = COORDS[step] + dt * VELOCS[step] + 0.5 * dt**2 * F0 / MASSES[:]
+        COORDS[step+1] = COORDS[step] + dt * VELOCS[step] + 0.5 * dt**2 * F0 / MASSES[:,None]
         F1 = get_Force( COORDS[step+1], step )
-        VELOCS[step+1] = VELOCS[step] + 0.5 * dt * (F0 + F1) / MASSES[:]
+        VELOCS[step+1] = VELOCS[step] + 0.5 * dt * (F0 + F1) / MASSES[:,None]
         F0 = F1
         
         # Check the boundary conditions
         COORDS[step+1] = check_PBC( COORDS[step+1] )
 
-        ENERGY[step+1,:] = get_Energy( COORDS[step+1,:], VELOCS[step+1,:] )
+        ENERGY[step+1,:] = get_Energy( COORDS[step+1,:], VELOCS[step+1,:], MASSES[:,None] )
         TEMP[step+1]     = get_Temperature( ENERGY[step+1,0], NPARTICLES )
 
 @jit(nopython=True)
-def get_Energy( R, V ):
+def get_Energy( R, V, M ):
     E = np.zeros( (3) )
     for p in range( NPARTICLES ):
-        E[0] += 0.5 * MASSES[p] * V[p]**2 # 0.5 * np.linalg.norm(MASSES[p] * V[p])**2
+        E[0] += 0.5 * np.linalg.norm(M * V[p])**2
         for pp in range( p+1,NPARTICLES ):
-            R12        = R[pp] - R[p]
-            if ( abs(R12) > L/2 ):
-                if ( R[pp] > L/2 ):
-                    R12 = (R[pp] - L) - R[p]
-                elif ( R[pp] < L/2 ):
-                    R12 = (R[pp] + L) - R[p]
-            R12_NORM   = abs(R12) # np.linalg.norm( R12 ) # |R1 - R2| = sqrt( dx^2 + dy^2 + dz^2 )
+            R12 = R[pp] - R[p]
+            if ( np.linalg.norm(R12) > L/2 ):
+                for d in range( 3 ):
+                    if ( R[pp,d] > L/2 ):
+                        R12[d] = (R[pp,d] - L) - R[p,d]
+                    elif ( R[pp,d] < L/2 ):
+                        R12[d] = (R[pp,d] + L) - R[p,d]
+            R12_NORM   = np.linalg.norm( R12 ) # |R1 - R2| = sqrt( dx^2 + dy^2 + dz^2 )
             E[1]      -= 4 * EPS * ( SIG**12 / R12_NORM**12 - SIG**6 / R12_NORM**6 )
     
     E[2] = E[0] + E[1]

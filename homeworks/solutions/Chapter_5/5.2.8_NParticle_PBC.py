@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import subprocess as sp
 from numba import jit
 
-DATA_DIR = "5.2.7_2Particle_PBC"
+DATA_DIR = "5.2.8_NParticle_PBC"
 sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 def get_Globals():

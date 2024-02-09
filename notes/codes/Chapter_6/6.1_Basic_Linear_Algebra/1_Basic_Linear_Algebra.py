@@ -83,7 +83,6 @@ def vectors():
     print("Vector:          ",v)
     print("Conjugate Vector:", np.conjugate(v) )
 
-
 def vectors_einsum():
     v = np.array([ 1, 2, 3 ])
 
@@ -106,7 +105,6 @@ def vectors_einsum():
     print("Element-wise Division:")
     print( v/v )
     print( np.einsum("a,a->a",v,1/v) ) # v[a] * (1/v[a]) =  v1[a]
-
 
 def matrices():
     N = 2
@@ -186,8 +184,63 @@ def matrices_einsum():
     print( "A * A\n", A * A )
     print( "A * A\n", np.einsum("ab,ab->ab", A, A) ) # A[a,b] * A[a,b] = M[a,b]
 
-def eigenvalues_and_eigenvectors(): # TODO
-    pass
+def eigenvalues_and_eigenvectors():
+
+    # What are the eigenvalues and eigenvectors of a diagonal matrix ?
+    A = np.array( [[1,0],[0,2]] )
+    #print( A )
+    EIGENVALUES, EIGENVECTORS = np.linalg.eigh( A )
+    #print("Eigenvalues\n",   EIGENVALUES  )
+    #print("Eigenvectors\n",  EIGENVECTORS )
+
+
+
+
+    # How to diagonalize a Hermitian (kj is complex conjugate of jk) matrix
+    A = np.array( [[1,1],[1,1]] )
+    #print( A )
+    EIGENVALUES, EIGENVECTORS = np.linalg.eigh( A ) # MOST IMPORTANT QUANTUM MECHANICS TOOL
+    #print("Eigenvalues\n",   EIGENVALUES  )
+    #print("Eigenvectors\n",  EIGENVECTORS )
+    #print( 1/np.sqrt(2) )
+
+    U = EIGENVECTORS # Matrix of eigenvectors
+    # How do I use the result of the diagonalization to diagonalize the matrix ?
+    #print( U @ A @ U.T )
+    #print( U.T @ np.diag(EIGENVALUES) @ U )
+
+
+    """
+    """
+
+    # Functions of matrices
+    A    = np.array( [[1,1],[1,1]] )
+    a, U = np.linalg.eigh( A )
+    # exp(A) = 1 + A + A^2/2! + A^3/3! + ...
+    #        = 1 + A + A@A/2 + A@A@A/6 + ...
+
+    #print( a )
+    #print( np.diag(a) )
+    print( U.T @ np.diag( np.exp( a ) ) @ U ) # EXACT RESULT
+
+    # APPROXIMATE RESULT
+    RESULT = np.identity(2)
+    for n in range( 1, 20 ):
+        TMP = np.identity(2)
+        for _ in range( n ):
+            TMP = TMP @ A
+        RESULT += TMP / np.math.factorial(n)
+    print( RESULT )
+    
+
+
+
+
+
+
+    
+
+
 
 def main():
     #vectors()

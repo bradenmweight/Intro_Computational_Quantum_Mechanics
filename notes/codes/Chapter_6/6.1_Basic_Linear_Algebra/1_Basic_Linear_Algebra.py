@@ -188,67 +188,80 @@ def eigenvalues_and_eigenvectors():
 
     # What are the eigenvalues and eigenvectors of a diagonal matrix ?
     A = np.array( [[1,0],[0,2]] )
-    #print( A )
+    print( "Diagonal Matrix A:\n", A )
     EIGENVALUES, EIGENVECTORS = np.linalg.eigh( A )
-    #print("Eigenvalues\n",   EIGENVALUES  )
-    #print("Eigenvectors\n",  EIGENVECTORS )
-
-
-
+    for v in range( len(A) ):
+        print( f"Eigenvalue {v} = {EIGENVALUES[v]}; Eigenvector {v} = {EIGENVECTORS[:,v]}" )
 
     # How to diagonalize a Hermitian (kj is complex conjugate of jk) matrix
     A = np.array( [[1,1],[1,1]] )
-    #print( A )
-    EIGENVALUES, EIGENVECTORS = np.linalg.eigh( A ) # MOST IMPORTANT QUANTUM MECHANICS TOOL
-    #print("Eigenvalues\n",   EIGENVALUES  )
-    #print("Eigenvectors\n",  EIGENVECTORS )
-    #print( 1/np.sqrt(2) )
+    print( "\nNon-Diagonal Matrix A:\n", A )
+    E_a, U_A = np.linalg.eigh( A ) # MOST IMPORTANT QUANTUM MECHANICS TOOL
+    for a in range( len(A) ):
+        print( f"Eigenvalue E_{a} = {E_a[a]}; Eigenvector U_{a} = {U_A[:,a]}" )
 
-    U = EIGENVECTORS # Matrix of eigenvectors
     # How do I use the result of the diagonalization to diagonalize the matrix ?
-    #print( U @ A @ U.T )
-    #print( U.T @ np.diag(EIGENVALUES) @ U )
+    print("\nRotate A to diagonal representation: [E_a] = U_a @ A @ U_a.T")
+    print(U_A @ A @ U_A.T )
+    print("\nRotate eigenvalue matrix to non-diagonal representation: [E_a] = U_a @ A @ U_a.T")
+    print( U_A.T @ np.diag(E_a) @ U_A )
+
+    # How to write a different matrix in the representation of A
+    B = np.array([[1,2],[2,3]])
+    print("\nNon-Diagonal Matrix B:\n", B )
+    print("\nRotate B representation that diagonalizes A: B (in A_rep) = U_A @ B @ U_A.T")
+    print( U_A @ B @ U_A.T )
+
+    print("\n\n")
 
 
-    """
-    """
+    
 
+
+
+
+
+def functions_of_Matrices():
+    
     # Functions of matrices
-    A    = np.array( [[1,1],[1,1]] )
-    a, U = np.linalg.eigh( A )
+    A        = np.array( [[1,1],[1,1]] )
+    print( "\nNon-Diagonal Matrix A:\n", A )
+    E_a, U_a = np.linalg.eigh( A )
+    for a in range( len(A) ):
+        print( f"Eigenvalue E_{a} = {E_a[a]}; Eigenvector U_{a} = {U_a[:,a]}" )
+
+    # Taylor Series Expansion of Matrix Exponential
     # exp(A) = 1 + A + A^2/2! + A^3/3! + ...
     #        = 1 + A + A@A/2 + A@A@A/6 + ...
 
-    #print( a )
-    #print( np.diag(a) )
-    print( U.T @ np.diag( np.exp( a ) ) @ U ) # EXACT RESULT
+    print("Exact result can be obtained by:\n \
+1. diagonalizing A,\n \
+2. exponentiating the eigenvalues,\n \
+3. rotating back to original representation")
+    print("\nexp(A) = U.T @ exp(E_a) @ U")
+    print( U_a.T @ np.diag( np.exp( E_a ) ) @ U_a ) # EXACT RESULT
 
     # APPROXIMATE RESULT
+    NTERMS = 2 # Number of terms in the Taylor series expansion
     RESULT = np.identity(2)
-    for n in range( 1, 20 ):
+    for n in range( 1, NTERMS ):
         TMP = np.identity(2)
         for _ in range( n ):
             TMP = TMP @ A
         RESULT += TMP / np.math.factorial(n)
+    print( f"\nTaylor Series Expansion up to {NTERMS} terms:" )
     print( RESULT )
+    print("Try changing the 'NTERMS' variable in the code to see how the result changes.")
+
+    print("\n")
     
-
-
-
-
-
-
-    
-
-
-
 def main():
     #vectors()
     #vectors_einsum()
     #matrices()
     #matrices_einsum()
-    eigenvalues_and_eigenvectors()
-
+    #eigenvalues_and_eigenvectors()
+    functions_of_Matrices()
 
 if ( __name__ == "__main__" ):
     main()

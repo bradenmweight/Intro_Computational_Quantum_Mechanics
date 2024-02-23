@@ -1,5 +1,5 @@
 import numpy as np
-
+from matplotlib import pyplot as plt
 
 
 def vectors():
@@ -197,13 +197,14 @@ def eigenvalues_and_eigenvectors():
     A = np.array( [[1,1],[1,1]] )
     print( "\nNon-Diagonal Matrix A:\n", A )
     E_a, U_A = np.linalg.eigh( A ) # MOST IMPORTANT QUANTUM MECHANICS TOOL
+
     for a in range( len(A) ):
         print( f"Eigenvalue E_{a} = {E_a[a]}; Eigenvector U_{a} = {U_A[:,a]}" )
 
     # How do I use the result of the diagonalization to diagonalize the matrix ?
     print("\nRotate A to diagonal representation: [E_a] = U_a @ A @ U_a.T")
-    print(U_A @ A @ U_A.T )
-    print("\nRotate eigenvalue matrix to non-diagonal representation: [E_a] = U_a @ A @ U_a.T")
+    print( U_A @ A @ U_A.T )
+    print("\nRotate eigenvalue matrix to non-diagonal representation: A = U_a.T @ [a] @ U_a")
     print( U_A.T @ np.diag(E_a) @ U_A )
 
     # How to write a different matrix in the representation of A
@@ -213,13 +214,6 @@ def eigenvalues_and_eigenvectors():
     print( U_A @ B @ U_A.T )
 
     print("\n\n")
-
-
-    
-
-
-
-
 
 def functions_of_Matrices():
     
@@ -235,9 +229,9 @@ def functions_of_Matrices():
     #        = 1 + A + A@A/2 + A@A@A/6 + ...
 
     print("Exact result can be obtained by:\n \
-1. diagonalizing A,\n \
-2. exponentiating the eigenvalues,\n \
-3. rotating back to original representation")
+    1. diagonalizing A,\n \
+    2. exponentiating the eigenvalues,\n \
+    3. rotating back to original representation")
     print("\nexp(A) = U.T @ exp(E_a) @ U")
     print( U_a.T @ np.diag( np.exp( E_a ) ) @ U_a ) # EXACT RESULT
 
@@ -255,13 +249,61 @@ def functions_of_Matrices():
 
     print("\n")
     
+def eigenvalue_Equations():
+
+    # Eigenvalue Equations
+    # A |a> = a |a>
+    # A is a matrix, |a> is a vector, a is a scalar
+
+    A = np.array([[1,2],[2,1]])
+    Ea, Ua, = np.linalg.eigh(A)
+    #Ua = Ua * np.sqrt( len(A) )
+    print("Matrix A:\n", A)
+    for a in range( len(Ea) ):
+        print( "Eigenvalue a_%s = %1.3f; Eigenvector Ua_%s = %s" %(a, Ea[a], a, Ua[:,a]) )
+
+
+    print( "A x |a>:" )
+    print( A @ Ua[:,0] )
+    print( A @ Ua[:,1] )
+
+    # print( "A x v / a:" )
+    # print( A @ Ua[:,0] / Ea[0] )
+    # print( A @ Ua[:,1] / Ea[1] )
+
+    vec = np.array([ 1, 5 ])
+    print( "| vec >           =", vec )
+    c0 = np.dot( vec, Ua[:,0] )
+    c1 = np.dot( vec, Ua[:,1] )
+    print( "c0 = < vec | a0 > =", c0 )
+    print( "c1 = < vec | a1 > =", c1 )
+    print( "c0 * | a0 >  +  c1 * | a1 > =", c0 * Ua[:,0] + c1 * Ua[:,1] )
+    print( Ua @ vec )
+    
+
+    B = np.array([[1,1],[1,2]])
+    Eb, Ub, = np.linalg.eigh(B)
+    print("Matrix B:\n", B)
+    for b in range( len(Eb) ):
+        print( "Eigenvalue b_%s = %1.3f; Eigenvector Ub_%s = %s" %(b, Eb[b], b, Ub[:,b]) )
+
+
+    # [A,B] = AB - BA
+    print( "[A,B] = AB - BA:\n", A @ B - B @ A )
+
+
+
+
 def main():
     #vectors()
     #vectors_einsum()
     #matrices()
     #matrices_einsum()
     #eigenvalues_and_eigenvectors()
-    functions_of_Matrices()
+    #functions_of_Matrices()
+    
+    
+    eigenvalue_Equations()
 
 if ( __name__ == "__main__" ):
     main()

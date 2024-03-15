@@ -64,8 +64,10 @@ def plot_Energies( E, EDVR ):
 
 def main():
     get_Globals()
-    E, U       = np.linalg.eigh( get_Kinetic_Energy() + get_Potential_Energy() )
-    EDVR, UDVR = np.linalg.eigh( get_Kinetic_Energy_DVR() + get_Potential_Energy() )
+    H          = get_Kinetic_Energy() + get_Potential_Energy()
+    E, U       = np.linalg.eigh( H )
+    H_DVR      = get_Kinetic_Energy_DVR() + get_Potential_Energy()
+    EDVR, UDVR = np.linalg.eigh( H_DVR )
     print( "", E[:20] )
     print( "", EDVR[:20] )
     plot_Energies( E, EDVR )

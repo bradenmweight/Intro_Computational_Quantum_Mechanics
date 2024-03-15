@@ -45,17 +45,19 @@ def get_Kinetic_Energy_DVR():
 
 def plot_Energies( E, EDVR ):
 
-    EXACT = 0.5 + np.arange( len(E) )
-    plt.plot( np.arange(len(E)), EXACT, "-", label="Exact" )
-    plt.plot( np.arange(len(E)), E, "o", label="O1" )
-    plt.plot( np.arange(len(E)), EDVR, "--", label="DVR" )
+    NPLOT   = 50
+    indices = np.arange( NPLOT )
+    EXACT = 0.5 + np.arange( NPLOT )
+    plt.plot( indices, EXACT[:NPLOT], "-", label="Exact" )
+    plt.plot( indices, E[:NPLOT], "o", label="O1" )
+    plt.plot( indices, EDVR[:NPLOT], "--", label="DVR" )
     plt.legend()
     plt.savefig( f"{DATA_DIR}/Energies.jpg", dpi=300 )
     plt.clf()
 
 
-    plt.plot( np.arange(len(E)), EXACT - E, "-", label="O1" )
-    plt.plot( np.arange(len(E)), EXACT - EDVR, "-", label="DVR" )
+    plt.plot( indices, EXACT - E[:NPLOT], "-", label="O1" )
+    plt.plot( indices, EXACT - EDVR[:NPLOT], "-", label="DVR" )
     plt.legend()
 
     plt.savefig( f"{DATA_DIR}/Energies_DIFF.jpg", dpi=300 )
@@ -68,8 +70,8 @@ def main():
     E, U       = np.linalg.eigh( H )
     H_DVR      = get_Kinetic_Energy_DVR() + get_Potential_Energy()
     EDVR, UDVR = np.linalg.eigh( H_DVR )
-    print( "", E[:20] )
-    print( "", EDVR[:20] )
+    print( "", E[:10] )
+    print( "", EDVR[:10] )
     plot_Energies( E, EDVR )
     #plot_wavefunction( U )
 

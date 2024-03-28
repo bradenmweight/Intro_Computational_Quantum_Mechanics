@@ -39,7 +39,7 @@ def get_Kinetic_Energy_DVR():
         for j in range(Nx):
             if ( i == j ):
                 T[i,i] = np.pi**2 / 3
-            if (i != j ):
+            if (i != j ): # if ( not (i == j) ):
                 T[i,j] = (-1)**(i-j) * 2 / (i-j)**2
     return T / 2 / dx**2
 
@@ -63,6 +63,18 @@ def plot_Energies( E, EDVR ):
     plt.savefig( f"{DATA_DIR}/Energies_DIFF.jpg", dpi=300 )
     plt.clf()
 
+def plot_wavefunction( E, U ):
+
+    plt.plot( xGRID, 0.5 * xGRID**2, "-", lw=6, c='black', label="V(x)" )
+    plt.plot( xGRID, 3*U[:,0] + E[0], "-", label="$|E_0\\rangle$" )
+    plt.plot( xGRID, 3*U[:,1] + E[1], "-", label="$|E_1\\rangle$" )
+    plt.plot( xGRID, 3*U[:,2] + E[2], "-", label="$|E_2\\rangle$" )
+    plt.xlim(-4,4)
+    plt.ylim(0,4)
+    plt.legend()
+
+    plt.savefig( f"{DATA_DIR}/WFN.jpg", dpi=300 )
+    plt.clf()
 
 def main():
     get_Globals()
@@ -73,7 +85,7 @@ def main():
     print( "", E[:10] )
     print( "", EDVR[:10] )
     plot_Energies( E, EDVR )
-    #plot_wavefunction( U )
+    plot_wavefunction( E,  U )
 
 if ( __name__ == "__main__" ):
     main()

@@ -61,8 +61,18 @@ def plot_wavefunctions( U ):
     plt.savefig(f"{DATA_DIR}/PSI_k.jpg", dpi=300)
     plt.clf()
 
+    PSI_x = np.zeros( (Nx, Nx), dtype=complex )
+    phase = np.exp( 1j * kGRID * XMIN )
+    for state in range( Nx ):
+        PSI_x[:,state]  = phase * get_iFFT( U[:,state] )
+        if ( state == 0 ):
+            SIGN        = np.sign( np.sum( PSI_x[:,state] ) )
+        PSI_x[:,state] *= SIGN
+
+    color_list = ["black", "red"]
     for state in range( 2 ):
-        plt.plot( xGRID, np.abs(get_iFFT(U[:,state])), label=f"State {state}" )
+        plt.plot( xGRID, PSI_x[:,state].real, "-", c=color_list[state], label=f"State {state}" )
+        plt.plot( xGRID, PSI_x[:,state].imag, "--", c=color_list[state] )
     plt.legend()
     plt.savefig(f"{DATA_DIR}/PSI_x.jpg", dpi=300)
     plt.clf()

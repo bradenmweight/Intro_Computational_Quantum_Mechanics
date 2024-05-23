@@ -8,7 +8,7 @@ sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 def get_Globals():
     global Nx, dx, xGRID, XMIN, XMAX
-    Nx    = 501
+    Nx    = 201
     XMIN  = -6
     XMAX  =  6
     xGRID = np.linspace( XMIN, XMAX, Nx )
@@ -62,7 +62,7 @@ def plot_dipole_matrix( U ):
     #         MU[i,j] = np.sum( U[:,i] * xGRID[:] * U[:,j] )
     MU  = np.einsum("xJ,x,xK->JK", U[:,:], xGRID[:], U[:,:])
 
-    plt.imshow( -1*MU[:10,:10], cmap="afmhot_r", origin="lower" )
+    plt.imshow( MU[:10,:10], cmap="bwr", origin="lower" )
     plt.colorbar(pad=0.01)
     plt.xlabel("Electronic State, $j$",fontsize=15)
     plt.ylabel("Electronic State, $k$",fontsize=15)
@@ -74,7 +74,8 @@ def plot_dipole_matrix( U ):
 def plot_momentum_matrix( U ):
 
     def get_P_OP_2Order():
-        P_OP  = np.diag( np.ones(Nx-1),k=1 ) - np.diag( np.ones(Nx-1),k=-1 )
+        P_OP   = np.diag( np.ones(Nx-1),k=1 ) \
+               - np.diag( np.ones(Nx-1),k=-1 )
         return -1j * P_OP / ( 2 * dx )
     def get_P_OP_4Order():
         P_OP  = -1*np.diag( np.ones(Nx-2),k= 2 ) \
@@ -82,8 +83,8 @@ def plot_momentum_matrix( U ):
                 -8*np.diag( np.ones(Nx-1),k=-1 ) \
                 +1*np.diag( np.ones(Nx-2),k=-2 )
         return -1j * P_OP / ( 12 * dx )
-    #P_OP = get_P_OP_2Order()
-    P_OP = get_P_OP_4Order()
+    P_OP = get_P_OP_2Order()
+    #P_OP = get_P_OP_4Order()
 
     # P    = np.zeros( (Nx, Nx), dtype=np.complex64 )
     # for i in range( 100 ):
@@ -91,7 +92,7 @@ def plot_momentum_matrix( U ):
     #         P[i,j] = U[:,i] @ P_OP[:,:] @ U[:,j]
     P = np.einsum("aJ,ab,bK->JK", U[:,:], P_OP[:,:], U[:,:])
 
-    plt.imshow( np.imag(P[:10,:10]), cmap="viridis", origin="lower" )
+    plt.imshow( np.imag(P[:10,:10]), cmap="bwr", origin="lower" )
     plt.colorbar(pad=0.01)
     plt.xlabel("Electronic State, $j$",fontsize=15)
     plt.ylabel("Electronic State, $k$",fontsize=15)
@@ -103,8 +104,8 @@ def plot_momentum_matrix( U ):
 def do_Phase_Correction( U ):
     # Choose ground state to be positive
     if ( np.sum(U[:,0]) < 0 ):
-        PHASE = -1 * np.ones( Nx )
-        U = np.einsum( "x,xJ->xJ", PHASE[:], U[:,:] )
+        print("Doing Phase Correction")
+        U = -1 * U
     return U
 
 def show_X_P_Relation( E, X_MAT, P_MAT ):
@@ -174,14 +175,14 @@ def plot_Absorption_Spectra( E, X_MAT, P_MAT ):
         ABS_X[pt] = np.sum( f_X[1:] * np.exp( -(EGRID[pt]-dE_0K[1:])**2/2/SIG**2 ) )
         ABS_P[pt] = np.sum( f_P[1:] * np.exp( -(EGRID[pt]-dE_0K[1:])**2/2/SIG**2 ) )
 
-    plt.plot( EGRID, ABS_X, "-" , c="black", label="Length Gauge" )
-    plt.plot( EGRID, ABS_P, "--", c="red"  , label="Velocity Gauge" )
+    plt.plot( EGRID, ABS_X, "-" , lw=4, c="black", label="Length Gauge" )
+    plt.plot( EGRID, ABS_P, "--", lw=2, c="red"  , label="Velocity Gauge" )
     markerline, stemlines, baseline = plt.stem(dE_0K[1:], f_X[1:], linefmt="blue", markerfmt="o" )
     markerline.set_markerfacecolor('none')
     markerline.set_markeredgecolor('blue')
     markerline.set_markersize(8)
     markerline.set_markeredgewidth(1.5)
-    markerline, stemlines, baseline = plt.stem(dE_0K[1:], f_P[1:], linefmt="red", markerfmt="o" )
+    markerline, stemlines, baseline = plt.stem(dE_0K[1:], f_P[1:], linefmt="red", markerfmt="." )
     markerline.set_markerfacecolor('none')
     markerline.set_markeredgecolor('red')
     markerline.set_markersize(4)

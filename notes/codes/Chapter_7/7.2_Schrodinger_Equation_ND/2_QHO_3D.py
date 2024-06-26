@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import subprocess as sp
 from time import time
 
-DATA_DIR = "1_QHO_3D"
+DATA_DIR = "2_QHO_3D"
 sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 

@@ -20,7 +20,7 @@ def get_Params():
 
     ### Define current system ###
     global Vx, WFN_0, E_0
-    CASE = "DW" # "ISW" or "QHO" or "GAUSS" or "DW"
+    CASE = "DoubleWell" # "ISW" or "QHO" or "GAUSS" or "DoubleWell"
 
 
     if ( CASE == "QHO" ):
@@ -54,7 +54,7 @@ def get_Params():
         E_0   = E[0]
         WFN_0 = U[:,0]
 
-    elif ( CASE == "DW" ):
+    elif ( CASE == "DoubleWell" ):
         Vx    = -1 * np.exp( -(xGRID+3)**2 / 2 ) - np.exp( -(xGRID-3)**2 / 2 )
         Tx    = get_Tx( Nx, dx )
         E, U  = np.linalg.eigh( Tx + np.diag( Vx ) )
@@ -65,6 +65,8 @@ def get_Params():
         print(f"Potential chosen not found: {CASE}")
         exit()
 
+    WFN_0 = np.sign( np.sum( WFN_0 ) ) * WFN_0 # Choose WFN to be positive
+
     #############################
 
 
@@ -72,15 +74,21 @@ def get_Params():
 def get_Potential_Matrix_Elements( Ubasis ):
     """
     Calculate the matrix elements of the potential operator.
+    V_nm = <n|V|m> = \int dx <n|x> V(x) <x|m> = \int dx \phi_n(x) V(x) \phi_m(x)
+    \phi_n is the n_th QHO basis function
+    #### THIS IS HARD TO DO ANALYTICALLY FOR ARBITRARY POTENTIALS ####
+    #### FOR GAUSSIAN FUNCTIONS, THIS IS KNOWN FOR THE COULUMB POTENTIAL ####
     """
-    V  = np.einsum("xj,x,xk->jk", Ubasis, Vx, Ubasis ) # jk matrix elements of \hat{V}
+    V  = np.einsum("xn,x,xm->nm", Ubasis, Vx, Ubasis ) # nm matrix elements of \hat{V}
     return V
 
 def get_Kinetic_Matrix_Elements( Ubasis ):
     """
     Calculate the matrix elements of the kinetic operator.
+    T_nm = <n|T|m> = \int dx dx' <n|x> T(x,x') <x'|m> = \int dx dx' \phi_n(x) T(x,x') \phi_m(x')
+    \phi_n is the n_th QHO basis function
     """
-    T = np.einsum("xj,xy,yk->jk", Ubasis, get_Tx( Nx, dx ), Ubasis ) # jk matrix elements of \hat{T}
+    T = np.einsum("xn,xy,ym->nm", Ubasis, get_Tx( Nx, dx ), Ubasis ) # nm matrix elements of \hat{T}
     return T
 
 def get_Kinetic_Matrix_Elements_Analytic( Ubasis ):
@@ -99,7 +107,6 @@ def get_Kinetic_Matrix_Elements_Analytic( Ubasis ):
             T[m,n] = T[n,m] # Kinetic energy operator must be Hermitian
     return T * wbasis / 4
 
-
 def get_FULL_H( Ubasis ):
     print("Calculating V matrix elements...fast since \\hat{V} is diagonal")
     V = get_Potential_Matrix_Elements( Ubasis )
@@ -115,7 +122,7 @@ def get_FULL_H( Ubasis ):
 def do_Single_Point_Calculation():
 
     # First do single calculation with fixed basis size
-    nbasis = 50
+    nbasis = 100
     print("Working on basis size: %d" % nbasis)
     get_Params()
     Ubasis = get_Basis( nbasis )
@@ -163,12 +170,11 @@ def main():
 
 def plot_Single( E, U, Ubasis ):
     Ux    = Ubasis @ U[:,0] # Rotate to position basis from QHO basis
-    PHASE = np.sign( np.sum( Ux * WFN_0[:] ) ) # Check phase of exact vs. numerical
+    Ux    = np.sign( np.sum( Ux ) ) * Ux # Choose WFN to be positive
     for i in range( len(Ubasis[0,:]) ):
-        #plt.plot(xGRID, Ubasis[:,i], lw=1, alpha=0.25)
-        plt.plot(xGRID, np.abs(U[i,0]) * Ubasis[:,i], lw=1, alpha=0.5)
+        plt.plot(xGRID, np.abs(U[i,0]) * Ubasis[:,i], lw=1, alpha=0.5) # Scaled QHO basis function
     plt.plot(xGRID, WFN_0, c="black", lw=8, alpha=0.25, label="Exact GS")
-    plt.plot(xGRID, Ux * PHASE, c="red", lw=2, label="Numerical GS")
+    plt.plot(xGRID, Ux, c="red", lw=2, label="Numerical GS")
     plt.xlabel("Position", fontsize=15)
     plt.ylabel("Energy / Wavefunction", fontsize=15)
     plt.title("$E_0^\\mathrm{Num.}$ = %1.3f   $E_0^\\mathrm{Exact}$ = %1.3f    NBASIS = %d" % (E[0], E_0, len(Ubasis[0,:])), fontsize=15)
@@ -180,7 +186,7 @@ def plot_Single( E, U, Ubasis ):
 
     plt.plot(xGRID, Vx, c="black", lw=4, label="Potential")
     plt.plot(xGRID, WFN_0 + E_0, c="black", lw=8, alpha=0.25, label="Exact GS")
-    plt.plot(xGRID, Ux * PHASE + E[0], "--", c="red", lw=2, label="Numerical GS")
+    plt.plot(xGRID, Ux + E[0], "--", c="red", lw=2, label="Numerical GS")
     plt.xlabel("Position", fontsize=15)
     plt.ylabel("Potential Energy", fontsize=15)
     plt.title("$E_0^\\mathrm{Num.}$ = %1.3f   $E_0^\\mathrm{Exact}$ = %1.3f    NBASIS = %d" % (E[0], E_0, len(Ubasis[0,:])), fontsize=15)
@@ -219,6 +225,23 @@ def get_Tx( N, d ):
     T -= np.diag( np.ones(N-1), k=1 )
     return T / 2 / d**2
 
+def plot_Basis( V, E, U ):
+    """
+    Plot the QHO basis functions.
+    """
+    SIGN = np.sign( np.sum( U[:,0] ) ) # Choose WFN_0 to be positive
+    NPLOT = 50
+    plt.plot(xGRID, np.diagonal(V), c='black', lw=2, alpha=0.5)
+    for n in range( NPLOT ):
+        plt.plot(xGRID, 10 * SIGN * U[:,n] + E[n], lw=1, alpha=0.5)
+    plt.xlabel("Position", fontsize=15)
+    plt.ylabel("Wavefunction", fontsize=15)
+    plt.title("Quantum Harmonic Oscillator Basis Functions", fontsize=15)
+    plt.ylim( 0, E[NPLOT+10] )
+    plt.tight_layout()
+    plt.savefig(f"{DATA_DIR}/QHO_Basis.jpg", dpi=300)
+    plt.clf()
+
 def get_Basis( NBASIS ):
     """
     Choose quantum harmonic oscillator basis functions.
@@ -229,7 +252,8 @@ def get_Basis( NBASIS ):
     wbasis = 5.0000
     V = 0.5000 * wbasis**2 * np.diag( xGRID**2 )
     T = get_Tx( Nx, dx )
-    _, U = np.linalg.eigh( T + V )
+    E, U = np.linalg.eigh( T + V )
+    plot_Basis( V,E,U )
     return U[:,:NBASIS]
 
 

@@ -3,13 +3,14 @@ from matplotlib import use
 use('Agg')
 from matplotlib import pyplot as plt
 import subprocess as sp
+from time import time
 
 DATA_DIR = "7.4.1_Schrodinger_Equation_Arbitrary_Basis/"
 sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 def get_Params():
     global doANALYTIC_BASIS
-    doANALYTIC_BASIS = True
+    doANALYTIC_BASIS = False
 
     global xGRID, Nx, dx
     xMIN  = -10
@@ -69,13 +70,11 @@ def get_Params():
 
     #############################
 
-
-
 def get_Potential_Matrix_Elements( Ubasis ):
     """
     Calculate the matrix elements of the potential operator.
-    V_nm = <n|V|m> = \int dx <n|x> V(x) <x|m> = \int dx \phi_n(x) V(x) \phi_m(x)
-    \phi_n is the n_th QHO basis function
+    V_nm = <n|V|m> = \\int dx <n|x> V(x) <x|m> = \\int dx \\phi_n(x) V(x) \\phi_m(x)
+    \\phi_n is the n_th QHO basis function
     #### THIS IS HARD TO DO ANALYTICALLY FOR ARBITRARY POTENTIALS ####
     #### FOR GAUSSIAN FUNCTIONS, THIS IS KNOWN FOR THE COULUMB POTENTIAL ####
     """
@@ -85,8 +84,8 @@ def get_Potential_Matrix_Elements( Ubasis ):
 def get_Kinetic_Matrix_Elements( Ubasis ):
     """
     Calculate the matrix elements of the kinetic operator.
-    T_nm = <n|T|m> = \int dx dx' <n|x> T(x,x') <x'|m> = \int dx dx' \phi_n(x) T(x,x') \phi_m(x')
-    \phi_n is the n_th QHO basis function
+    T_nm = <n|T|m> = \\int dx dx' <n|x> T(x,x') <x'|m> = \\int dx dx' \\phi_n(x) T(x,x') \\phi_m(x')
+    \\phi_n is the n_th QHO basis function
     """
     T = np.einsum("xn,xy,ym->nm", Ubasis, get_Tx( Nx, dx ), Ubasis ) # nm matrix elements of \hat{T}
     return T
@@ -112,11 +111,14 @@ def get_FULL_H( Ubasis ):
     V = get_Potential_Matrix_Elements( Ubasis )
     if ( doANALYTIC_BASIS == False ):
         print("Calculating T matrix elements...slow since \\hat{T} is not diagonal")
-        V = get_Potential_Matrix_Elements( Ubasis )
-        T = get_Kinetic_Matrix_Elements( Ubasis )
+        T0 = time()
+        T  = get_Kinetic_Matrix_Elements( Ubasis )
+        print("Time to calculate T matrix elements: %1.4f s" % (time() - T0))
     else:
         print("Calculating T matrix elements...fast since \\hat{T} is analytic")
+        T0 = time()
         T = get_Kinetic_Matrix_Elements_Analytic( Ubasis )
+        print("Time to calculate T matrix elements: %1.4f s" % (time() - T0))
     return T + V
 
 def do_Single_Point_Calculation():
@@ -124,15 +126,18 @@ def do_Single_Point_Calculation():
     # First do single calculation with fixed basis size
     nbasis = 100
     print("Working on basis size: %d" % nbasis)
-    get_Params()
     Ubasis = get_Basis( nbasis )
-    V      = get_Potential_Matrix_Elements( Ubasis )
     H      = get_FULL_H( Ubasis )
     E, U   = np.linalg.eigh( H )
     print( "Basis size: %d   Energy: %1.6f    Exact: %1.6f" % (nbasis, E[0], E_0) )
     plot_Single( E, U, Ubasis )
 
 def do_Scan_Calculation():
+    if ( doANALYTIC_BASIS == False ):
+        print("\n\nERROR:")
+        print("\tOnly do the scan calculation with analytic basis functions.")
+        print("\tNumerical evaluation of the kinetic energy operator is too slow.\n")
+        exit()
     # Do a scan over the number of basis functions
     nbasis_list = np.arange( 1,1000,5 )
     E_GS        = np.zeros( len(nbasis_list) )
@@ -147,6 +152,7 @@ def do_Scan_Calculation():
 
 
 def main():
+    get_Params()
 
     # Do single point calculation
     do_Single_Point_Calculation()
@@ -165,7 +171,7 @@ def main():
 
 
 
-
+#### I PUT EXTRA FUNCTION DOWN HERE -- NOT THE POINT OF THE SCRIPT ####
 
 
 def plot_Single( E, U, Ubasis ):
@@ -213,8 +219,6 @@ def plot_scan( E_GS, nbasis_list ):
     plt.savefig(f"{DATA_DIR}/Ground_State_Convergence_Error.jpg", dpi=300)
     plt.clf()
 
-
-
 def get_Tx( N, d ):
     """
     Construct the kinetic energy operator.
@@ -255,9 +259,6 @@ def get_Basis( NBASIS ):
     E, U = np.linalg.eigh( T + V )
     plot_Basis( V,E,U )
     return U[:,:NBASIS]
-
-
-
 
 if ( __name__ == "__main__" ):
     main()

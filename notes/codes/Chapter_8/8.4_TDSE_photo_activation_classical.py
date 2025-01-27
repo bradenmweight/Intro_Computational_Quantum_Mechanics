@@ -9,9 +9,12 @@ from pygifsicle import optimize as gifOPT # This needs to be installed somewhere
 from PIL import Image, ImageDraw, ImageFont
 
 DATA_DIR = "8.4_TDSE_photo_activation_classical"
-#sp.call(f"mkdir -p {DATA_DIR}", shell=True)
+sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 def get_Globals():
+    global make_movies
+    make_movies = False # This takes time
+
     global Nx, dx, xGRID
     XMIN  = -10.0
     XMAX  = 10.0
@@ -54,9 +57,9 @@ def left_state_with_LASER( E_HAM, U_HAM, EFIELD ):
     psi_t      = propagate( E_HAM, U_HAM, psi_0, EFIELD ) # < E_n | psi (0) >  -->  < E_n | psi (t) >
     E_t        = np.einsum("tE,E,tE->t", psi_t.conj(), E_HAM, psi_t).real
     psi_t      = np.einsum("xE,tE->tx", U_HAM[:,:], psi_t[:,:]) # < E_n | psi (t) >  -->  < x | psi (t) >
-    X1_t       = np.einsum("tx,x,tx->t", psi_t.conj(), xGRID, psi_t).real # <x>
-    X2_t       = np.einsum("tx,x,tx->t", psi_t.conj(), xGRID**2, psi_t).real # <x^2>
-    return psi_t, E_t, X1_t, X2_t
+    #X1_t       = np.einsum("tx,x,tx->t", psi_t.conj(), xGRID, psi_t).real # <x>
+    #X2_t       = np.einsum("tx,x,tx->t", psi_t.conj(), xGRID**2, psi_t).real # <x^2>
+    return psi_t, E_t#, X1_t, X2_t
 
 def main():
     get_Globals()
@@ -70,10 +73,9 @@ def main():
     # E0     = 0.1
     # FREQ   = E_HAM[2] - E_HAM[0] # Choose resonance condition
     # EFIELD = E0 * np.cos( FREQ * tGRID[:,None] ) * xGRID[None,:] # (t,x)
-    # psi_t, E_t, X1_t, X2_t = left_state_with_LASER( E_HAM, U_HAM, EFIELD )
+    # psi_t, E_t = left_state_with_LASER( E_HAM, U_HAM, EFIELD )
     # make_x_movie(psi_t, E_t, EFIELD, name="left_state_with_LASER")
     # make_E_movie(np.einsum("xE,tx->tE", U_HAM, psi_t), name="left_state_with_LASER")
-    # make_plot_X1_X2(X1_t, X2_t, name="left_state_with_LASER")
 
     # ### Left State with Varying LASER frequency
     RESONANCE_STATE = 2 # (0,1), (2,3), (4,5), (6,7), (8,9), ...
@@ -89,14 +91,15 @@ def main():
             print("Working on FREQ", FREQi, "of", len(FREQ_list))
             # Define the electric field
             EFIELD = E0 * np.cos( FREQ * tGRID[:,None] ) * xGRID[None,:] # E(t,x)
-            psi_t, E_t, _, _     = left_state_with_LASER( E_HAM, U_HAM, EFIELD )
-            density            = np.real( psi_t[:,x_mask].conj() * psi_t[:,x_mask] )
-            product_population = np.sum(density, axis=1)
-            plt.semilogy( tGRID, product_population, "-", c=color_list[FREQi], lw=2, label="$\\frac{\\omega_\\mathrm{c}}{E_%d - E_0}$ = %1.2f" % (RESONANCE_STATE,FREQ/(E_HAM[RESONANCE_STATE]-E_HAM[0])) * (len(FREQ_list) <= 11) )
+            psi_t, E_t           = left_state_with_LASER( E_HAM, U_HAM, EFIELD )
+            density              = np.real( psi_t[:,x_mask].conj() * psi_t[:,x_mask] )
+            product_population   = np.sum(density, axis=1)
             RATES_LIN[FREQi,E0i] = np.average( product_population[1:] / tGRID[1:] )
             RATES_EXP[FREQi,E0i] = np.average( -np.log(1 - product_population[1:]) / tGRID[1:] )
+            plt.semilogy( tGRID, product_population, "-", c=color_list[FREQi], lw=2, label="$\\frac{\\omega_\\mathrm{c}}{E_%d - E_0}$ = %1.2f" % (RESONANCE_STATE,FREQ/(E_HAM[RESONANCE_STATE]-E_HAM[0])) * (len(FREQ_list) <= 11) )
             print("RATES (LIN,EXP): (%1.2e, %1.2e) " % (RATES_LIN[FREQi,E0i], RATES_EXP[FREQi,E0i]) )
-            make_x_movie(psi_t, E_t, EFIELD, name="left_state_with_LASER_FREQ_WC_%1.4f_E0_%1.2e" % (FREQ,E0))
+            if ( make_movies == True ):
+                make_x_movie(psi_t, E_t, EFIELD, name="left_state_with_LASER_FREQ_WC_%1.4f_E0_%1.2e" % (FREQ,E0))
         plt.xlabel("Time (a.u.)", fontsize=15)
         plt.ylabel("Product Population", fontsize=15)
         plt.legend()
@@ -197,7 +200,7 @@ def make_x_movie( psi_t, E_t, EFIELD, name="" ):
             make_frame( psi_t[frame], E_t[frame], tGRID[frame] )
             image = imageio.imread( "DUMMY.jpg" ) # Read JPEG file
             writer.append_data(image) # Write JPEG file (to memory at first; then printed at end)
-    #sp.call("rm DUMMY.jpg", shell=True)
+    sp.call("rm DUMMY.jpg", shell=True)
     #gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
 
 def make_E_movie( psi_t, name="" ):
@@ -225,7 +228,7 @@ def make_E_movie( psi_t, name="" ):
             make_frame( psi_t[frame] )
             image = imageio.imread( "DUMMY.jpg" ) # Read JPEG file
             writer.append_data(image) # Write JPEG file (to memory at first; then printed at end)
-    #sp.call("rm DUMMY.jpg", shell=True)
+    sp.call("rm DUMMY.jpg", shell=True)
     #gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
 
 

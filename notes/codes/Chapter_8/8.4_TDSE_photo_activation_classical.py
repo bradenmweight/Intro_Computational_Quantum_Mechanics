@@ -13,7 +13,8 @@ sp.call(f"mkdir -p {DATA_DIR}", shell=True)
 
 def get_Globals():
     global make_movies
-    make_movies = False # This takes time
+    make_movies = False  # This takes time. If True, will make movies of wavepacket. 
+                        # If false, will generate pictures of product population.
 
     global Nx, dx, xGRID
     XMIN  = -10.0
@@ -96,19 +97,21 @@ def main():
             product_population   = np.sum(density, axis=1)
             RATES_LIN[FREQi,E0i] = np.average( product_population[1:] / tGRID[1:] )
             RATES_EXP[FREQi,E0i] = np.average( -np.log(1 - product_population[1:]) / tGRID[1:] )
-            plt.semilogy( tGRID, product_population, "-", c=color_list[FREQi], lw=2, label="$\\frac{\\omega_\\mathrm{c}}{E_%d - E_0}$ = %1.2f" % (RESONANCE_STATE,FREQ/(E_HAM[RESONANCE_STATE]-E_HAM[0])) * (len(FREQ_list) <= 11) )
             print("RATES (LIN,EXP): (%1.2e, %1.2e) " % (RATES_LIN[FREQi,E0i], RATES_EXP[FREQi,E0i]) )
-            if ( make_movies == True ):
+            if ( make_movies == False ):
+                plt.semilogy( tGRID, product_population, "-", c=color_list[FREQi], lw=2, label="$\\frac{\\omega_\\mathrm{c}}{E_%d - E_0}$ = %1.2f" % (RESONANCE_STATE,FREQ/(E_HAM[RESONANCE_STATE]-E_HAM[0])) * (len(FREQ_list) <= 11) )
+            elif ( make_movies == True ):
                 make_x_movie(psi_t, E_t, EFIELD, name="left_state_with_LASER_FREQ_WC_%1.4f_E0_%1.2e" % (FREQ,E0))
-        plt.xlabel("Time (a.u.)", fontsize=15)
-        plt.ylabel("Product Population", fontsize=15)
-        plt.legend()
-        plt.ylim(1e-8,1)
-        #plt.ylim(0,1)
-        plt.tight_layout()
-        plt.savefig("%s/product_population_varying_LASER_FREQ_E0_%1.2e.png" % (DATA_DIR,E0),dpi=300)
-        plt.clf()
-        plt.close()
+        if ( make_movies == False ):
+            plt.xlabel("Time (a.u.)", fontsize=15)
+            plt.ylabel("Product Population", fontsize=15)
+            plt.legend()
+            plt.ylim(1e-8,1)
+            #plt.ylim(0,1)
+            plt.tight_layout()
+            plt.savefig("%s/product_population_varying_LASER_FREQ_E0_%1.2e.png" % (DATA_DIR,E0),dpi=300)
+            plt.clf()
+            plt.close()
 
     color_list = plt.get_cmap("brg")(np.linspace(0,1,len(E0_list)))
     for E0i,E0 in enumerate(E0_list):
@@ -173,21 +176,22 @@ def get_Energy_Basis():
 
 def make_x_movie( psi_t, E_t, EFIELD, name="" ):
 
-    def make_frame( psi, E, t ):
-        plt.plot( xGRID, Vx + EFIELD, "-", c='black', lw=8, alpha=0.5, label="V(x)" )
+    def make_frame( psi, E, t, FIELD ):
+        plt.plot( xGRID, Vx + FIELD, "-", c='black', lw=8, alpha=0.5, label="V(x)" )
         norm = np.max(np.abs(psi))
         plt.plot( xGRID, 2 * np.abs(psi)/norm  + E, "-",  c='black', lw=2, label="ABS" )
         plt.plot( xGRID, 2 * np.real(psi)/norm + E, "-",  c='red', lw=2, label="RE" )
         plt.plot( xGRID, 2 * np.imag(psi)/norm + E, "-",  c='green', lw=2, label="IM" )
         plt.legend(loc=1)
         plt.xlim(-4,4)
-        plt.ylim(0, 30 )
+        plt.ylim(-5, 30 )
         plt.title("Energy = %1.2f, time = %1.2f" % (E, t), fontsize=15)
         plt.xlabel("Position (a.u.)", fontsize=15)
         plt.ylabel("Wavefunction, $\\psi(x,t) = \\langle x | \\psi(t) \\rangle$", fontsize=15)
         plt.tight_layout()
         plt.savefig(f"DUMMY.jpg",dpi=70)
         plt.clf()
+        plt.close()
 
 
     movieNAME = f"{DATA_DIR}/movie_{name}_X.gif"
@@ -197,11 +201,11 @@ def make_x_movie( psi_t, E_t, EFIELD, name="" ):
         for frame in range( 0, NSTEPS, 5 ):
             #print ("Compiling Frame: %1.0f of %1.0f" % ( (frame+1)//NSKIP, NSTEPS//NSKIP) )
             print ("Compiling Frame: %1.0f of %1.0f" % ( (frame+1), NSTEPS) )
-            make_frame( psi_t[frame], E_t[frame], tGRID[frame] )
+            make_frame( psi_t[frame], E_t[frame], tGRID[frame], EFIELD[frame] )
             image = imageio.imread( "DUMMY.jpg" ) # Read JPEG file
             writer.append_data(image) # Write JPEG file (to memory at first; then printed at end)
     sp.call("rm DUMMY.jpg", shell=True)
-    #gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
+    gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
 
 def make_E_movie( psi_t, name="" ):
 
@@ -229,7 +233,7 @@ def make_E_movie( psi_t, name="" ):
             image = imageio.imread( "DUMMY.jpg" ) # Read JPEG file
             writer.append_data(image) # Write JPEG file (to memory at first; then printed at end)
     sp.call("rm DUMMY.jpg", shell=True)
-    #gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
+    gifOPT(movieNAME) # This will compress the GIF movie by at least a factor of two/three. With this: ~750 frames --> 80 MB
 
 
 def make_plot_X1_X2( X1_t, X2_t, name="" ):
